@@ -28,6 +28,8 @@ Read skills/experiment-distiller.md and update memory only after audit/review.
 
 After the worker iteration, check the project stop policy again and report `application_loop_status` as `continue` or `stop`. The host agent environment may launch another fresh worker iteration when status is `continue`.
 
+A worker iteration may include bounded inner algorithmic search, such as CV, HPO, threshold search, feature selection, ablations, or repeated seeds. Those inner searches are allowed when they are part of the declared experiment hypothesis, stay within budget, avoid the final holdout, and record all trials or a reproducible search summary.
+
 For Python projects, create or reuse a `pyproject.toml` in `projects/<project_id>/` and run commands from that directory with `uv --cache-dir .uv-cache run ...`. Do not run task-specific code with bare system `python`, `python3`, or `pip` from the repository root.
 
 ## Skill Files

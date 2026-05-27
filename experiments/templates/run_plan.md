@@ -28,6 +28,14 @@ Describe one experiment hypothesis.
 - Hyperparameter changes:
 - Evaluation changes:
 
+## Inner Search Plan
+
+- Inner search type:
+- Search space:
+- Budget:
+- Selection rule:
+- Trials to record:
+
 ## Leakage Risks
 
 - Split risk:

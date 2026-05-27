@@ -7,6 +7,21 @@ description: Run one fresh-context Ralph-style AutoML experiment iteration with 
 
 Use this skill for one bounded worker iteration inside the larger AutoML application loop. A worker iteration is not the whole project unless the metric contract's stop policy says the project is done.
 
+## Terminology
+
+`Worker iteration` means one fresh-context Ralph worker invocation. It does not forbid bounded inner algorithmic loops.
+
+Allowed inner loops include cross-validation, hyperparameter search, threshold search, feature selection, ablations, repeated seeds, and model-family searches when they are part of the declared experiment hypothesis.
+
+Inner loops must:
+
+- stay within the metric contract's runtime/cost/search budget
+- use only approved train/validation data
+- keep the final holdout sealed
+- record every trial or a reproducible search summary
+- report the selected candidate and selection criterion
+- remain narrow enough to be audited as one experiment family
+
 ## Inputs
 
 Required:
@@ -30,6 +45,7 @@ Optional:
 - Keep all task-specific work under `projects/<project_id>/`.
 - Do not write project-specific code, contracts, data, outputs, run records, registries, or memory files at the repository root or under root-level `experiments/runs/`.
 - Implement exactly one experiment hypothesis or one tightly related experiment family.
+- You may run a bounded inner search inside that experiment family when the search space is defined before execution and fully recorded.
 - Every artifact that influences future decisions must be recorded.
 - A run is not admitted until leakage audit and metric review pass.
 

@@ -25,6 +25,8 @@ The AutoML loop has two levels:
 - **Worker iteration**: one fresh-context agent session executes one bounded experiment, audits it, records it, distills it, and reports status.
 - **Application loop**: the host agent environment repeats worker iterations until the project stop policy is satisfied.
 
+A worker iteration may contain bounded inner algorithmic search, such as cross-validation, hyperparameter search, threshold search, feature selection, ablations, or repeated seeds, when that search is part of the declared experiment hypothesis, stays within the metric contract's budget, and records every trial that can influence future choices.
+
 Do not treat a host application's "active goal" or the current chat request as the project stop policy. The project stop policy lives in `projects/<project_id>/experiments/metric_contract.md`.
 
 When asked to run, continue, or execute the AutoML loop, follow this path:
