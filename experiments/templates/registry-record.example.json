@@ -1,0 +1,24 @@
+{
+  "run_id": "run_0001",
+  "created_at": "2026-05-27T00:00:00Z",
+  "hypothesis": "Baseline gradient boosting model with fold-safe preprocessing.",
+  "dataset_hash": "sha256:example",
+  "split_id": "split_0001",
+  "primary_metric": "roc_auc",
+  "metric_value": 0.8123,
+  "metric_direction": "maximize",
+  "baseline_run_id": null,
+  "metric_delta": null,
+  "leakage_verdict": "PASS",
+  "metric_review_verdict": "PASS",
+  "admitted": true,
+  "artifact_paths": {
+    "manifest": "experiments/runs/run_0001/manifest.json",
+    "metrics": "experiments/runs/run_0001/metrics.json",
+    "leakage_report": "experiments/runs/run_0001/leakage_report.json",
+    "metric_review": "experiments/runs/run_0001/metric_review.md"
+  },
+  "distilled_lesson": "Fold-safe baseline established.",
+  "next_hypothesis": "Try calibrated gradient boosting if probabilities matter."
+}
+

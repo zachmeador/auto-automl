@@ -1,0 +1,22 @@
+{
+  "run_id": "run_0001",
+  "dataset_hash": "sha256:example",
+  "split_id": "split_0001",
+  "hypothesis": "Baseline gradient boosting model with fold-safe preprocessing.",
+  "changes": [
+    "Added baseline model pipeline"
+  ],
+  "metric_delta": {
+    "roc_auc": null
+  },
+  "leakage_verdict": "PASS",
+  "metric_review_verdict": "PASS",
+  "admitted": true,
+  "cost": {
+    "train_seconds": 120
+  },
+  "lesson": "Baseline established with no leakage findings.",
+  "avoid": "",
+  "next_hypothesis": "Try one bounded feature family or HPO change."
+}
+

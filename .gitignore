@@ -1,0 +1,16 @@
+# Experiment outputs
+experiments/runs/*
+!experiments/runs/README.md
+experiments/registry.jsonl
+experiments/memory.jsonl
+
+# Python/runtime caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Local environment
+.env
+.venv/
+venv/

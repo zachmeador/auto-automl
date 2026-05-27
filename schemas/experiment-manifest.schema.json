@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-automl.local/schemas/experiment-manifest.schema.json",
+  "title": "AutoAutoML Experiment Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "created_at",
+    "hypothesis",
+    "dataset",
+    "split",
+    "metric",
+    "commands",
+    "artifacts",
+    "code_version",
+    "random_seeds"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "hypothesis": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "hash"],
+      "properties": {
+        "name": {"type": "string"},
+        "hash": {"type": "string"},
+        "path": {"type": "string"}
+      }
+    },
+    "split": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["split_id", "train", "validation", "test_policy"],
+      "properties": {
+        "split_id": {"type": "string"},
+        "train": {"type": "string"},
+        "validation": {"type": "string"},
+        "test": {"type": "string"},
+        "test_policy": {
+          "type": "string",
+          "enum": ["sealed", "release_gate", "unavailable", "none"]
+        },
+        "hash": {"type": "string"}
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "direction"],
+      "properties": {
+        "name": {"type": "string"},
+        "direction": {
+          "type": "string",
+          "enum": ["maximize", "minimize"]
+        },
+        "minimum_practical_delta": {"type": "number"},
+        "tie_breakers": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "command"],
+        "properties": {
+          "name": {"type": "string"},
+          "command": {"type": "string"},
+          "exit_code": {"type": "integer"}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "code_version": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "git_commit": {"type": "string"},
+        "dirty": {"type": "boolean"},
+        "diff_path": {"type": "string"}
+      }
+    },
+    "random_seeds": {
+      "type": "array",
+      "items": {"type": "integer"}
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}
+

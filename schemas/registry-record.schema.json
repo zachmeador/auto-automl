@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-automl.local/schemas/registry-record.schema.json",
+  "title": "AutoAutoML Registry Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "created_at",
+    "hypothesis",
+    "dataset_hash",
+    "split_id",
+    "primary_metric",
+    "metric_value",
+    "metric_direction",
+    "baseline_run_id",
+    "metric_delta",
+    "leakage_verdict",
+    "metric_review_verdict",
+    "admitted",
+    "artifact_paths"
+  ],
+  "properties": {
+    "run_id": {"type": "string"},
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "hypothesis": {"type": "string"},
+    "dataset_hash": {"type": "string"},
+    "split_id": {"type": "string"},
+    "primary_metric": {"type": "string"},
+    "metric_value": {"type": "number"},
+    "metric_direction": {
+      "type": "string",
+      "enum": ["maximize", "minimize"]
+    },
+    "baseline_run_id": {
+      "type": ["string", "null"]
+    },
+    "metric_delta": {
+      "type": ["number", "null"]
+    },
+    "leakage_verdict": {
+      "type": "string",
+      "enum": ["PASS", "WARN", "FAIL"]
+    },
+    "metric_review_verdict": {
+      "type": "string",
+      "enum": ["PASS", "WARN", "FAIL"]
+    },
+    "admitted": {"type": "boolean"},
+    "artifact_paths": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "distilled_lesson": {"type": "string"},
+    "next_hypothesis": {"type": "string"}
+  }
+}
+

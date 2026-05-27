@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-automl.local/schemas/leakage-report.schema.json",
+  "title": "AutoAutoML Leakage Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "verdict",
+    "checks_performed",
+    "blocking_findings",
+    "warnings",
+    "evidence",
+    "required_fixes"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["PASS", "WARN", "FAIL"]
+    },
+    "checks_performed": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "blocking_findings": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim", "source"],
+        "properties": {
+          "claim": {"type": "string"},
+          "source": {"type": "string"},
+          "line": {"type": "integer"}
+        }
+      }
+    },
+    "required_fixes": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}
+

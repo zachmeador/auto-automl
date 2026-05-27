@@ -1,0 +1,57 @@
+---
+name: feature-engineer
+description: Propose and implement fold-safe feature engineering changes for one AutoML experiment iteration.
+---
+
+# Feature Engineering Skill
+
+Use this skill when the selected experiment changes features, transforms, encodings, imputations, or feature selection.
+
+## Hard Rules
+
+- Fit all learned transformations on training folds only.
+- Put transformations inside a pipeline, fold loop, or equivalent split-aware structure.
+- Never compute target encodings, aggregations, scalers, imputers, PCA, feature selection, oversampling, or text/vector features on all data before splitting.
+- For time-series features, use only information available at prediction time.
+- For grouped data, do not aggregate across validation/test groups in ways unavailable at training time.
+
+## Procedure
+
+1. Read dataset, split, and metric contracts.
+2. Pick one feature hypothesis.
+3. Write the hypothesis and leakage risks into the run plan.
+4. Implement the feature change in the smallest reasonable surface area.
+5. Add or run checks that prove the transform is fit only on allowed training data.
+6. Record feature names, source columns, and whether each feature is learned, deterministic, target-aware, temporal, or grouped.
+
+## Preferred Feature Categories
+
+Start with interpretable, bounded changes:
+
+- missingness indicators
+- numeric transforms with fixed formulas
+- categorical encodings inside folds
+- interaction terms suggested by domain semantics
+- monotonic binning or clipping based on training quantiles
+- time-lag and rolling-window features with explicit horizon checks
+
+## Avoid Unless Explicitly Justified
+
+- features derived from validation/test distribution statistics
+- target encoding outside nested CV
+- high-cardinality memorization features
+- post-outcome status columns
+- global aggregates over all rows
+- any feature that improves validation sharply without a plausible deployment-time explanation
+
+## Output
+
+Update the run artifacts with:
+
+- feature hypothesis
+- implementation summary
+- feature list
+- leakage risks and mitigations
+- validation metrics
+- reproducibility notes
+
