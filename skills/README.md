@@ -10,23 +10,29 @@ The core skills are also tooling-neutral. Do not steer users toward a specific A
 
 ## Recommended Invocation Pattern
 
-Run a fresh agent session for one iteration:
+Use `AGENTS.md` as the entry point. It defines how to find the child project, contracts, registry, memory, loop skill, verification gates, and stop policy.
+
+Run a fresh worker session for one iteration:
 
 ```text
-Read AGENTS.md, README.md, skills/automl-loop.md, the dataset contract, the split contract, the metric contract, and the current experiment registry. Execute exactly one experiment iteration and write the required artifacts.
+Read AGENTS.md, README.md, skills/automl-loop.md, the dataset contract, the split contract, the metric contract, and the current experiment registry. If the project stop policy is not already satisfied, execute exactly one worker iteration and write the required artifacts.
 ```
 
 Then run independent audit/review passes:
 
 ```text
-Read skills/leakage-auditor.md and audit experiments/runs/<run_id>/.
-Read skills/metric-reviewer.md and review experiments/runs/<run_id>/.
+Read skills/leakage-auditor.md and audit projects/<project_id>/experiments/runs/<run_id>/.
+Read skills/metric-reviewer.md and review projects/<project_id>/experiments/runs/<run_id>/.
 Read skills/experiment-distiller.md and update memory only after audit/review.
 ```
 
+After the worker iteration, check the project stop policy again and report `application_loop_status` as `continue` or `stop`. The host agent environment may launch another fresh worker iteration when status is `continue`.
+
+For Python projects, create or reuse a `pyproject.toml` in `projects/<project_id>/` and run commands from that directory with `uv --cache-dir .uv-cache run ...`. Do not run task-specific code with bare system `python`, `python3`, or `pip` from the repository root.
+
 ## Skill Files
 
-- `automl-loop.md`: orchestrates one Ralph-style experiment iteration.
+- `automl-loop.md`: orchestrates one Ralph-style worker iteration.
 - `data-profile.md`: creates dataset, split, and metric contracts.
 - `feature-engineer.md`: proposes and implements fold-safe feature changes.
 - `model-search.md`: proposes and implements bounded model/HPO changes.

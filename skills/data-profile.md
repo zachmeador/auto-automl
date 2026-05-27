@@ -9,11 +9,13 @@ Use this skill before model search or feature engineering. Its output defines wh
 
 ## Outputs
 
-Write contracts as markdown or JSON under the project location chosen by the user or harness. Recommended names:
+Write contracts under the child project workspace. Recommended names:
 
-- `experiments/dataset_contract.md`
-- `experiments/split_contract.md`
-- `experiments/metric_contract.md`
+- `projects/<project_id>/experiments/dataset_contract.md`
+- `projects/<project_id>/experiments/split_contract.md`
+- `projects/<project_id>/experiments/metric_contract.md`
+
+Do not write task-specific contracts to the repository root or root-level `experiments/`.
 
 ## Dataset Contract Checklist
 
@@ -64,4 +66,3 @@ If any of these are unknown, mark the contract incomplete and block model search
 - split semantics
 - primary metric
 - final holdout policy
-

@@ -1,6 +1,8 @@
 # Leakage Report
 
 Run ID:
+Project ID:
+Project root: `projects/<project_id>/`
 Verdict: WARN
 
 ## Blocking Findings
@@ -30,4 +32,3 @@ Verdict: WARN
 ## Required Fixes
 
 - None recorded.
-

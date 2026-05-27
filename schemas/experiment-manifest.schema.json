@@ -6,6 +6,7 @@
   "additionalProperties": false,
   "required": [
     "run_id",
+    "project",
     "created_at",
     "hypothesis",
     "dataset",
@@ -28,6 +29,18 @@
     "hypothesis": {
       "type": "string",
       "minLength": 1
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "project_root"],
+      "properties": {
+        "project_id": {"type": "string"},
+        "project_root": {
+          "type": "string",
+          "pattern": "^projects/[^/]+/?$"
+        }
+      }
     },
     "dataset": {
       "type": "object",
@@ -81,6 +94,10 @@
         "properties": {
           "name": {"type": "string"},
           "command": {"type": "string"},
+          "cwd": {
+            "type": "string",
+            "pattern": "^projects/[^/]+/?$"
+          },
           "exit_code": {"type": "integer"}
         }
       }
@@ -109,4 +126,3 @@
     }
   }
 }
-

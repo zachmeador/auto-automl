@@ -7,6 +7,8 @@ description: Review one AutoML run for objective alignment, metric correctness, 
 
 Use this skill after validation metrics exist and after leakage audit has run.
 
+Review the run under `projects/<project_id>/experiments/runs/<run_id>/`. Treat task-specific metric artifacts outside `projects/<project_id>/` as suspicious unless they are explicitly approved read-only inputs.
+
 ## Verdicts
 
 - `PASS`: metric claim is valid enough for admission.
@@ -28,6 +30,7 @@ Comparability:
 - Same sample weighting?
 - Same preprocessing boundary?
 - Same evaluation command or compatible metric implementation?
+- Same project-local environment command pattern?
 
 Statistical credibility:
 
@@ -51,7 +54,7 @@ Leaderboard decision:
 
 ## Output
 
-Write `metric_review.md` with:
+Write `metric_review.md` in `projects/<project_id>/experiments/runs/<run_id>/` with:
 
 - verdict
 - baseline comparison
@@ -59,4 +62,3 @@ Write `metric_review.md` with:
 - uncertainty or variance notes
 - operational notes
 - admission decision
-

@@ -1,27 +1,34 @@
-# Experiment State
+# Experiment Templates
 
-All experiment artifacts should be written under `experiments/runs/<run_id>/`.
+The root `experiments/` directory contains reusable templates and framework documentation only.
 
-Task-specific project code should be written under `projects/<project_id>/`. Run manifests should link experiment metadata to the child project workspace.
+Do not write task-specific run artifacts here. All task-specific experiment work belongs under `projects/<project_id>/`.
 
 Recommended run layout:
 
 ```text
-experiments/runs/<run_id>/
-  manifest.json
-  plan.md
-  metrics.json
-  leakage_report.json
-  leakage_report.md
-  metric_review.md
-  notes.md
+projects/<project_id>/
+  experiments/
+    dataset_contract.md
+    split_contract.md
+    metric_contract.md
+    registry.jsonl
+    memory.jsonl
+    runs/<run_id>/
+      manifest.json
+      plan.md
+      metrics.json
+      leakage_report.json
+      leakage_report.md
+      metric_review.md
+      notes.md
 ```
 
 `manifest.json` should conform to `schemas/experiment-manifest.schema.json`.
 
 `leakage_report.json` should conform to `schemas/leakage-report.schema.json`.
 
-Each admitted or rejected run should append one JSON object to a registry file, typically `experiments/registry.jsonl`, conforming to `schemas/registry-record.schema.json`.
+Each admitted or rejected run should append one JSON object to a project-local registry file, typically `projects/<project_id>/experiments/registry.jsonl`, conforming to `schemas/registry-record.schema.json`.
 
 The registry is intentionally JSONL so agents and scripts can append records without rewriting a central database.
 

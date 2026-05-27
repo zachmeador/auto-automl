@@ -18,6 +18,8 @@ Do not paste long logs. Extract reusable lessons.
 Produce one compact JSON-like record with:
 
 - `run_id`
+- `project_id`
+- `project_root`
 - `dataset_hash`
 - `split_id`
 - `hypothesis`
@@ -63,7 +65,6 @@ Use these labels when useful:
 
 ## Output
 
-Append the distilled record to the configured memory file, or write it to the run notes if no memory file exists.
+Append the distilled record to `projects/<project_id>/experiments/memory.jsonl`, or write it to the run notes if no memory file exists.
 
 Do not mark a run as admitted unless both leakage and metric review verdicts are `PASS`.
-

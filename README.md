@@ -46,6 +46,12 @@ experiments/
 projects/
   README.md
   <project_id>/
+    pyproject.toml
+    uv.lock
+    experiments/
+    src/
+    data/
+    outputs/
 
 docs/research/
   llm-ralph-loops.md
@@ -63,6 +69,10 @@ read contracts -> choose one hypothesis -> implement one experiment
 
 The sealed final holdout is outside normal loop operation. Final test evaluation should be a separate release gate after model selection has stopped.
 
+Agents should use `AGENTS.md` as the entry point for finding the loop instructions. It points to the project workspace, contracts, loop skill, verification gates, and memory distillation step.
+
+One worker iteration is not the same as the whole AutoML application loop. The host agent environment may repeat worker iterations until `projects/<project_id>/experiments/metric_contract.md` says the stop policy is satisfied.
+
 ## Skill Order
 
 1. `skills/data-profile.md` creates the dataset, split, and metric contract.
@@ -79,7 +89,15 @@ Templates for contracts and run artifacts live in `experiments/templates/`.
 
 Generated ML project code should live under `projects/<project_id>/`, not at the repo root. The root repo is the reusable skill/control layer; child project directories are where agents create task-specific training code, notebooks, data adapters, configs, and model artifacts.
 
-Run metadata may still be written under `experiments/runs/<run_id>/`, but manifests should point to the relevant `projects/<project_id>/` files.
+All task-specific work should stay inside the child project directory, including contracts, registries, memory, run metadata, data splits, outputs, notebooks, environment files, and local scripts. The root `experiments/` directory is for reusable templates and framework documentation only.
+
+For Python experiments, prefer a project-local `uv` environment:
+
+- create or reuse `projects/<project_id>/pyproject.toml`
+- run commands from `projects/<project_id>/`
+- use `uv --cache-dir .uv-cache run <command>` instead of bare `python`, `python3`, or `pip`
+- prefer `pyproject.toml` scripts for repeatable commands
+- keep `uv.lock`, `.venv/`, and `.uv-cache/` inside the child project
 
 ## Optional Extension Packs
 

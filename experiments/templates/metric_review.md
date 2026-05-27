@@ -1,6 +1,8 @@
 # Metric Review
 
 Run ID:
+Project ID:
+Project root: `projects/<project_id>/`
 Verdict: WARN
 
 ## Summary
@@ -40,4 +42,3 @@ Verdict: WARN
 - Metric review verdict:
 - Admitted:
 - Reason:
-

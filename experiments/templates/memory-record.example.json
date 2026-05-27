@@ -1,5 +1,7 @@
 {
   "run_id": "run_0001",
+  "project_id": "example_project",
+  "project_root": "projects/example_project",
   "dataset_hash": "sha256:example",
   "split_id": "split_0001",
   "hypothesis": "Baseline gradient boosting model with fold-safe preprocessing.",
@@ -19,4 +21,3 @@
   "avoid": "",
   "next_hypothesis": "Try one bounded feature family or HPO change."
 }
-

@@ -2,6 +2,9 @@
 
 Status: incomplete
 
+Project ID:
+Project root: `projects/<project_id>/`
+
 ## Task
 
 - Task type:
@@ -51,4 +54,3 @@ Status: incomplete
 - Unknown prediction-time availability:
 - Unknown split semantics:
 - Unknown final holdout policy:
-

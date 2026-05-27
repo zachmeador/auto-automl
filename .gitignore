@@ -1,14 +1,18 @@
 # Experiment outputs
-experiments/runs/*
-!experiments/runs/README.md
+experiments/runs/
 experiments/registry.jsonl
 experiments/memory.jsonl
+
+# Generated project workspaces
+projects/*
+!projects/README.md
 
 # Python/runtime caches
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
+.uv-cache/
 
 # Local environment
 .env

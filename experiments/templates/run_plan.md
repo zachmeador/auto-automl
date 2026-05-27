@@ -1,6 +1,8 @@
 # Run Plan
 
 Run ID:
+Project ID:
+Project root: `projects/<project_id>/`
 Status: planned
 
 ## Hypothesis
@@ -37,6 +39,8 @@ Describe one experiment hypothesis.
 
 ## Validation Command
 
+Run from `projects/<project_id>/` with `uv --cache-dir .uv-cache run ...` for Python projects.
+
 ```text
 <command>
 ```
@@ -48,4 +52,3 @@ Describe one experiment hypothesis.
 - Metrics written:
 - Leakage audit written:
 - Metric review written:
-

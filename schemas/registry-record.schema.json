@@ -6,6 +6,8 @@
   "additionalProperties": false,
   "required": [
     "run_id",
+    "project_id",
+    "project_root",
     "created_at",
     "hypothesis",
     "dataset_hash",
@@ -22,6 +24,11 @@
   ],
   "properties": {
     "run_id": {"type": "string"},
+    "project_id": {"type": "string"},
+    "project_root": {
+      "type": "string",
+      "pattern": "^projects/[^/]+/?$"
+    },
     "created_at": {
       "type": "string",
       "format": "date-time"
@@ -53,11 +60,11 @@
     "artifact_paths": {
       "type": "object",
       "additionalProperties": {
-        "type": "string"
+        "type": "string",
+        "pattern": "^projects/[^/]+/"
       }
     },
     "distilled_lesson": {"type": "string"},
     "next_hypothesis": {"type": "string"}
   }
 }
-

@@ -18,6 +18,8 @@ Use this skill after an experiment run and before leaderboard admission. Be adve
 - Feature list
 - Any cached artifacts touched by the run
 
+All inspected task-specific artifacts should be under `projects/<project_id>/`. Treat unexpected project artifacts outside that child directory as at least `WARN`, and as `FAIL` when they could influence training, validation, leakage, or model selection.
+
 ## Verdicts
 
 - `PASS`: no blocking leakage found.
@@ -31,6 +33,7 @@ Split integrity:
 - Are train, validation, and test boundaries explicit?
 - Are split artifact hashes recorded?
 - Did any code regenerate splits inconsistently?
+- Are split files under `projects/<project_id>/` or an explicitly approved external read-only source?
 - Are groups isolated when required?
 - Are time splits chronological when required?
 
@@ -44,7 +47,7 @@ Preprocessing:
 
 - Are imputers, scalers, encoders, feature selectors, PCA, vectorizers, oversamplers, and target encoders fit only on training folds?
 - Are validation/test rows transformed with fitted training objects only?
-- Are caches keyed by split and fold?
+- Are caches under `projects/<project_id>/` and keyed by split and fold?
 
 Target leakage:
 
@@ -71,7 +74,7 @@ Metric/selection leakage:
 
 ## Output
 
-Write `leakage_report.json` conforming to `schemas/leakage-report.schema.json`, plus a human-readable `leakage_report.md`.
+Write `leakage_report.json` conforming to `schemas/leakage-report.schema.json`, plus a human-readable `leakage_report.md`, in `projects/<project_id>/experiments/runs/<run_id>/`.
 
 Required fields:
 
@@ -83,4 +86,3 @@ Required fields:
 - `required_fixes`
 
 If verdict is `FAIL`, include the shortest concrete fix path.
-

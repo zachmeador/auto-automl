@@ -2,6 +2,9 @@
 
 Status: incomplete
 
+Project ID:
+Project root: `projects/<project_id>/`
+
 ## Split Identity
 
 - Split ID:
@@ -47,4 +50,3 @@ Status: incomplete
 - No group overlap across splits:
 - No future rows in training:
 - Final holdout labels inaccessible to normal loop:
-
