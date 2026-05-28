@@ -1,13 +1,13 @@
 ---
 name: model-search
-description: Propose and implement one bounded model-selection or hyperparameter-search change inside an AutoML worker iteration.
+description: Propose and implement one bounded model-selection or hyperparameter-search change inside an AutoML worker session.
 ---
 
 # Model Search Skill
 
 Use this skill when the selected experiment changes model class, hyperparameters, ensembling, calibration, loss, thresholding, or training procedure.
 
-A model-search experiment may run an inner search loop. The outer worker iteration is still one experiment family if the search space, budget, split, metric, and selection rule are declared before execution.
+A model-search worker session may run an inner search loop. Treat the search like a human would: define the rough search space and budget before running it, inspect results, and promote the best useful candidate into durable artifacts.
 
 ## Hard Rules
 
@@ -15,8 +15,8 @@ A model-search experiment may run an inner search loop. The outer worker iterati
 - Use the split and metric contracts exactly.
 - Do not use final holdout results for search.
 - Keep preprocessing coupled to the model pipeline.
-- Record every trial that can influence future choices.
-- Define the search space and selection criterion before running the search.
+- Record enough detail to reproduce the selected candidate and any result that influences future choices.
+- Define the search space, budget, and selection criterion before running the search.
 
 ## Procedure
 
@@ -25,7 +25,7 @@ A model-search experiment may run an inner search loop. The outer worker iterati
 3. Define the search space before running it.
 4. Define the selection rule before running it.
 5. Run the approved evaluation command or a minimal equivalent.
-6. Record all tried configs or the search summary needed to reproduce them.
+6. Record all tried configs or a search summary sufficient to reproduce the selected candidate and understand discarded alternatives.
 7. Compare the selected candidate against baseline with the metric contract.
 
 ## Sensible First Search Spaces

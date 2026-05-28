@@ -12,10 +12,10 @@ The core skills are also tooling-neutral. Do not steer users toward a specific A
 
 Use `AGENTS.md` as the entry point. It defines how to find the child project, contracts, registry, memory, loop skill, verification gates, and stop policy.
 
-Run a fresh worker session for one iteration:
+Run a fresh worker session:
 
 ```text
-Read AGENTS.md, README.md, skills/automl-loop.md, the dataset contract, the split contract, the metric contract, and the current experiment registry. If the project stop policy is not already satisfied, execute exactly one worker iteration and write the required artifacts.
+Read AGENTS.md, skills/automl-loop.md, the dataset contract, the split contract, the metric contract, and the current experiment registry. If the project stop policy is not already satisfied, make one practical unit of progress and write durable artifacts only for promoted candidates or lessons that should influence future work.
 ```
 
 Then run independent audit/review passes:
@@ -26,15 +26,15 @@ Read skills/metric-reviewer.md and review projects/<project_id>/experiments/runs
 Read skills/experiment-distiller.md and update memory only after audit/review.
 ```
 
-After the worker iteration, check the project stop policy again and report `application_loop_status` as `continue` or `stop`. The host agent environment may launch another fresh worker iteration when status is `continue`.
+After the worker session, check the project stop policy again and report `application_loop_status` as `continue` or `stop`. The host agent environment may launch another fresh worker session when status is `continue`.
 
-A worker iteration may include bounded inner algorithmic search, such as CV, HPO, threshold search, feature selection, ablations, or repeated seeds. Those inner searches are allowed when they are part of the declared experiment hypothesis, stay within budget, avoid the final holdout, and record all trials or a reproducible search summary.
+A worker session may include bounded inner algorithmic search, such as CV, HPO, threshold search, feature selection, ablations, or repeated seeds. Those inner searches are allowed when they stay within budget, avoid the final holdout, and leave enough detail to reproduce promoted candidates.
 
 For Python projects, create or reuse a `pyproject.toml` in `projects/<project_id>/` and run commands from that directory with `uv --cache-dir .uv-cache run ...`. Do not run task-specific code with bare system `python`, `python3`, or `pip` from the repository root.
 
 ## Skill Files
 
-- `automl-loop.md`: orchestrates one Ralph-style worker iteration.
+- `automl-loop.md`: orchestrates one Ralph-style worker session.
 - `data-profile.md`: creates dataset, split, and metric contracts.
 - `feature-engineer.md`: proposes and implements fold-safe feature changes.
 - `model-search.md`: proposes and implements bounded model/HPO changes.

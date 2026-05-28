@@ -1,19 +1,17 @@
-# Run Plan
+# Run Notes
 
 Run ID:
 Project ID:
 Project root: `projects/<project_id>/`
 Status: planned
 
+## Session Objective
+
+Describe the practical next move: baseline, debugging, model search, feature search, calibration, evaluation cleanup, or promotion.
+
 ## Hypothesis
 
-Describe one experiment hypothesis.
-
-## Expected Effect
-
-- Primary metric:
-- Expected direction:
-- Minimum useful improvement:
+State the hypothesis if this session is testing one.
 
 ## Baseline
 
@@ -34,7 +32,7 @@ Describe one experiment hypothesis.
 - Search space:
 - Budget:
 - Selection rule:
-- Trials to record:
+- Summary to record:
 
 ## Leakage Risks
 
@@ -56,7 +54,8 @@ Run from `projects/<project_id>/` with `uv --cache-dir .uv-cache run ...` for Py
 ## Stop Criteria
 
 - Validation completes:
-- Manifest written:
-- Metrics written:
-- Leakage audit written:
-- Metric review written:
+- Candidate promoted:
+- Manifest written if promoted:
+- Metrics written if promoted:
+- Leakage audit written if admitted:
+- Metric review written if admitted:

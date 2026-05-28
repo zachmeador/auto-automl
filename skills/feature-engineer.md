@@ -1,13 +1,13 @@
 ---
 name: feature-engineer
-description: Propose and implement fold-safe feature engineering changes inside an AutoML worker iteration.
+description: Propose and implement fold-safe feature engineering changes inside an AutoML worker session.
 ---
 
 # Feature Engineering Skill
 
 Use this skill when the selected experiment changes features, transforms, encodings, imputations, or feature selection.
 
-A feature-engineering experiment may include a bounded inner search over a declared feature family, such as comparing a small set of encodings, binning strategies, lag windows, or feature-selection thresholds. The search must be declared before execution, fold-safe, and fully recorded.
+A feature-engineering worker session may include a bounded inner search over a declared feature family, such as comparing a small set of encodings, binning strategies, lag windows, or feature-selection thresholds. The search must be fold-safe and recorded well enough to reproduce any promoted candidate.
 
 ## Hard Rules
 
@@ -16,8 +16,8 @@ A feature-engineering experiment may include a bounded inner search over a decla
 - Never compute target encodings, aggregations, scalers, imputers, PCA, feature selection, oversampling, or text/vector features on all data before splitting.
 - For time-series features, use only information available at prediction time.
 - For grouped data, do not aggregate across validation/test groups in ways unavailable at training time.
-- Define feature-search spaces before execution when comparing multiple feature variants.
-- Record every feature variant that can influence future choices.
+- Define feature-search spaces and selection criteria before execution when comparing multiple feature variants.
+- Record enough detail to reproduce promoted feature variants and any rejected variant that influences future choices.
 
 ## Procedure
 
@@ -27,7 +27,7 @@ A feature-engineering experiment may include a bounded inner search over a decla
 4. Write the hypothesis and leakage risks into the run plan.
 5. Implement the feature change in the smallest reasonable surface area.
 6. Add or run checks that prove the transform is fit only on allowed training data.
-7. Record feature names, source columns, variants tried, and whether each feature is learned, deterministic, target-aware, temporal, or grouped.
+7. Record promoted feature names, source columns, important variants tried, and whether each feature is learned, deterministic, target-aware, temporal, or grouped.
 
 ## Preferred Feature Categories
 

@@ -1,26 +1,39 @@
 ---
 name: automl-loop
-description: Run one fresh-context Ralph-style AutoML experiment iteration with strict evaluation, leakage-audit, metric-review, and memory-distillation gates.
+description: Run one fresh-context AutoML worker session that explores, evaluates, optionally promotes a candidate, and reports whether the application loop should continue.
 ---
 
-# AutoML Worker Iteration Skill
+# AutoML Worker Session Skill
 
-Use this skill for one bounded worker iteration inside the larger AutoML application loop. A worker iteration is not the whole project unless the metric contract's stop policy says the project is done.
+Use this skill for one worker session inside the larger AutoML application loop. A worker session is a human-sized unit of progress, not necessarily one model fit and not the whole project unless the metric contract's stop policy says the project is done.
 
 ## Terminology
 
-`Worker iteration` means one fresh-context Ralph worker invocation. It does not forbid bounded inner algorithmic loops.
+`Worker session` means one fresh-context Ralph worker invocation. It can include setup, debugging, baseline work, exploratory search, a model/feature experiment, or promotion of a candidate.
 
 Allowed inner loops include cross-validation, hyperparameter search, threshold search, feature selection, ablations, repeated seeds, and model-family searches when they are part of the declared experiment hypothesis.
 
-Inner loops must:
+Inner loops should:
 
 - stay within the metric contract's runtime/cost/search budget
 - use only approved train/validation data
 - keep the final holdout sealed
-- record every trial or a reproducible search summary
+- record promoted trials or a reproducible search summary
 - report the selected candidate and selection criterion
-- remain narrow enough to be audited as one experiment family
+
+## Human-Shaped Workflow
+
+Work like a practical ML engineer:
+
+1. Orient on contracts, code, current best result, and recent lessons.
+2. Pick the smallest useful next move.
+3. Explore quickly inside `projects/<project_id>/`.
+4. Keep scratch work lightweight.
+5. Promote a candidate only when it is useful, reproducible, and worth comparing.
+6. Run leakage audit and metric review only for promoted registry candidates.
+7. Distill the useful lesson and next move.
+
+Scratch work can be informal, but it cannot violate split, holdout, or project-local rules. If scratch results influence the next session, summarize them in notes or memory.
 
 ## Inputs
 
@@ -44,10 +57,10 @@ Optional:
 - Optimize validation only.
 - Keep all task-specific work under `projects/<project_id>/`.
 - Do not write project-specific code, contracts, data, outputs, run records, registries, or memory files at the repository root or under root-level `experiments/runs/`.
-- Implement exactly one experiment hypothesis or one tightly related experiment family.
-- You may run a bounded inner search inside that experiment family when the search space is defined before execution and fully recorded.
-- Every artifact that influences future decisions must be recorded.
-- A run is not admitted until leakage audit and metric review pass.
+- Keep the session focused on one practical objective or one tightly related experiment family.
+- You may run a bounded inner search inside that objective when the search budget and selection rule are clear.
+- Record enough detail to reproduce promoted candidates and scratch results that influence future choices.
+- A candidate is not admitted to the registry until leakage audit and metric review pass.
 
 ## Python Runtime Rules
 
@@ -74,50 +87,56 @@ For Python experiments:
    - Keep run metadata under `projects/<project_id>/experiments/runs/<run_id>/`.
    - For Python projects, set up or reuse the project-local `uv` environment before running project code.
 
-3. Write `projects/<project_id>/experiments/runs/<run_id>/plan.md`.
-   - State the hypothesis.
-   - State expected metric movement.
-   - State leakage risks before implementation.
+3. Choose the session objective.
+   - Examples: establish baseline, debug split integrity, try one model family, search one feature family, calibrate thresholds, or promote a promising candidate.
+   - Write a brief note before starting if the objective is non-obvious or risky.
 
-4. Implement the experiment.
+4. Explore or implement.
    - Keep preprocessing inside train-fold-only pipelines.
    - Use existing evaluation commands when present.
-   - If no command exists, create the smallest task-local command needed under `projects/<project_id>/` and record it in the manifest.
+   - If no command exists, create the smallest task-local command needed under `projects/<project_id>/`.
+   - Keep scratch outputs under the child project and summarize only what matters.
 
-5. Run validation.
-   - Capture metrics, runtime, random seeds, data hashes, code version, and command lines.
+5. Decide whether to promote a candidate.
+   - Promote when the result improves, establishes a baseline, fixes evaluation, reveals a durable lesson, or should influence future search.
+   - Do not promote throwaway debugging or obviously failed scratch attempts unless they teach an important avoidance lesson.
+
+6. For promoted candidates, write durable artifacts.
+   - Use `projects/<project_id>/experiments/runs/<run_id>/`.
+   - Capture metrics, runtime, random seeds, data hashes, code version, command lines, and a reproducible search summary.
    - Write `metrics.json` and `manifest.json`.
+   - Write `plan.md` when the candidate involves nontrivial search, risk, or a new feature/model family. A short notes section is enough for simple baselines.
 
-6. Run the gates.
+7. For promoted registry candidates, run the gates.
    - Apply `skills/leakage-auditor.md`.
    - Apply `skills/metric-reviewer.md`.
-   - Do not admit the run if either gate fails.
+   - Do not admit the candidate if either gate fails.
 
-7. Update registry.
+8. Update registry when appropriate.
    - Append one structured registry record with `admitted: true` only if both gates pass.
    - Write the registry under `projects/<project_id>/experiments/registry.jsonl`.
-   - Rejected runs still get registry records when they influenced future decisions.
+   - Rejected promoted candidates may get registry records when they influenced future decisions.
 
-8. Distill memory.
+9. Distill memory.
    - Apply `skills/experiment-distiller.md`.
    - Keep memory compact. Do not paste long logs.
 
-9. Check project-level stop policy.
+10. Check project-level stop policy.
    - Read `projects/<project_id>/experiments/metric_contract.md`.
    - Report whether a stop condition is satisfied.
    - If no stop condition is satisfied, report that the application loop should continue and include the next recommended hypothesis.
    - If a stop condition is satisfied, report the stopping reason and current best admitted run.
 
-## Worker Stop Conditions
+## Worker Report
 
-The worker iteration stops after one bounded experiment and reports:
+The worker session reports:
 
-- run id
-- hypothesis
-- metric delta versus baseline
-- leakage verdict
-- metric review verdict
-- admitted/rejected status
+- session objective
+- promoted run id, if any
+- metric delta versus baseline, if measured
+- leakage verdict, if audited
+- metric review verdict, if reviewed
+- admitted/rejected/not promoted status
 - project stop condition status
 - application loop status: `continue` or `stop`
 - next recommended hypothesis

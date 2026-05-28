@@ -22,10 +22,21 @@ This repo defines portable markdown skills for Ralph-style AutoML loops.
 
 The AutoML loop has two levels:
 
-- **Worker iteration**: one fresh-context agent session executes one bounded experiment, audits it, records it, distills it, and reports status.
-- **Application loop**: the host agent environment repeats worker iterations until the project stop policy is satisfied.
+- **Worker session**: one fresh-context agent session makes one practical move in the project: setup, debugging, baseline work, feature exploration, model search, evaluation cleanup, or promotion of a candidate.
+- **Application loop**: the host agent environment repeats worker sessions until the project stop policy is satisfied.
 
-A worker iteration may contain bounded inner algorithmic search, such as cross-validation, hyperparameter search, threshold search, feature selection, ablations, or repeated seeds, when that search is part of the declared experiment hypothesis, stays within the metric contract's budget, and records every trial that can influence future choices.
+A worker session may contain bounded inner algorithmic search, such as cross-validation, hyperparameter search, threshold search, feature selection, ablations, or repeated seeds, when that search stays within the metric contract's budget.
+
+Shape the work like a competent human ML engineer:
+
+1. Understand the task, split, metric, and current best result.
+2. Make the smallest useful next move.
+3. Explore quickly inside the project workspace.
+4. Promote only the useful candidate or lesson into durable experiment state.
+5. Audit and review only candidates being admitted to the registry.
+6. Leave a compact next-step recommendation.
+
+Do not create full formal artifacts for every scratch attempt. Scratch attempts may be summarized when they do not influence future choices. Any candidate that changes the leaderboard, informs future choices, or could be reused must be reproducible from a command, config, code state, and metrics summary.
 
 Do not treat a host application's "active goal" or the current chat request as the project stop policy. The project stop policy lives in `projects/<project_id>/experiments/metric_contract.md`.
 
@@ -42,15 +53,15 @@ When asked to run, continue, or execute the AutoML loop, follow this path:
    - `projects/<project_id>/experiments/memory.jsonl`
 5. Check the stop policy in `projects/<project_id>/experiments/metric_contract.md`.
 6. If a stop condition is already satisfied, do not start a new experiment. Report the stopping reason and current best admitted run.
-7. If no stop condition is satisfied, execute one worker iteration using `skills/automl-loop.md`.
-8. Apply the verification gates using:
+7. If no stop condition is satisfied, execute one worker session using `skills/automl-loop.md`.
+8. If the session promotes a candidate for registry admission, apply the verification gates using:
    - `skills/leakage-auditor.md`
    - `skills/metric-reviewer.md`
-9. Distill the result using `skills/experiment-distiller.md`.
+9. Distill the result or useful lesson using `skills/experiment-distiller.md`.
 10. Re-check the stop policy.
 11. Report the iteration result, whether the application loop should continue, and the next recommended hypothesis if continuing.
 
-If the host environment is running an always-on Ralph loop, it may invoke a new fresh-context worker iteration after step 11 when the stop policy says to continue. If the current session is just one worker invocation, stop after step 11 so the host loop can decide whether to launch the next worker.
+If the host environment is running an always-on Ralph loop, it may invoke a new fresh-context worker session after step 11 when the stop policy says to continue. If the current session is just one worker invocation, stop after step 11 so the host loop can decide whether to launch the next worker.
 
 ## AutoML Safety Rules
 
@@ -58,7 +69,7 @@ If the host environment is running an always-on Ralph loop, it may invoke a new 
 - Fit transformers, encoders, imputers, scalers, feature selectors, oversamplers, and target encoders only on training folds.
 - Use group-aware or time-aware splits when the prediction setting requires them.
 - Do not query final test metrics during model search.
-- Record every trial that influences future decisions.
+- Record enough detail to reproduce every promoted candidate and every scratch result that influences future decisions.
 
 ## File Conventions
 
