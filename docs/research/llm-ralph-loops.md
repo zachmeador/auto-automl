@@ -9,13 +9,13 @@ Date: 2026-05-27
 1. A long-running coding-agent harness that repeatedly starts a fresh agent session against a durable task/spec file until external checks pass.
 2. A self-evolving discovery loop where the system retrieves prior experience, generates candidates, evaluates them with tools, and distills results back into memory.
 
-For `auto-automl`, the useful synthesis is: keep the agent orchestration markdown-native and portable across Codex, Claude Code, Cursor, etc., but make the evaluation and leakage gates non-negotiable programmatic contracts. The LLM should propose changes, explain hypotheses, and update memory. It should not be trusted to decide that a model is valid without independent checks.
+For `auto-automl`, the useful synthesis is: keep the agent orchestration markdown-native and portable across Codex, Claude Code, Cursor, etc., while making the validation evaluator, split boundary, and sealed holdout non-negotiable. The LLM should propose changes, run bounded experiments, and update a compact frontier ledger. It should not be trusted to certify a final model without independent leakage and metric checks.
 
 Recommended first design:
 
 ```text
-task spec -> fresh agent run -> experiment implementation -> train/validation eval
-          -> leakage red-team gate -> experiment registry -> distill memory -> next run
+project card -> fresh agent run -> bounded code/config mutation
+             -> fixed train/validation eval -> frontier ledger -> next run
 ```
 
 The loop should optimize the declared objective on validation data while preserving a sealed final holdout that the agent cannot inspect or tune against.
@@ -29,7 +29,7 @@ The newer research/discovery usage is broader. FactorMiner, an ICLR 2026 worksho
 ## Core Design Principles
 
 Durable state over chat memory:
-The loop should persist plans, experiment records, data contracts, metrics, failures, and learned heuristics in files. A fresh agent session can then rehydrate only the relevant context.
+The loop should persist the project card, frontier ledger, metrics, meaningful failures, and learned heuristics in files. A fresh agent session can then rehydrate only the relevant context.
 
 One meaningful unit per iteration:
 The coding-agent Ralph literature strongly favors small iterations: pick one task or one experiment family, execute, validate, record, exit. For AutoML, one unit could be "try a CatBoost baseline with target encoding guarded by fold-only fitting" or "add lagged rolling features with timestamp availability checks."
@@ -40,8 +40,8 @@ The stop condition should be based on tests, metrics, leakage checks, runtime bu
 Separation of generator and verifier:
 The same LLM can draft ideas and critique them, but validation should be a separate role and, where possible, deterministic code. Red-team agent calls are useful for adversarial review, but they should sit on top of static/runtime checks.
 
-Memory is distilled, not dumped:
-Successful and failed trials should be compressed into reusable lessons: dataset profile, what improved the metric, what failed, leakage risks found, time cost, and when a method should be avoided.
+State is compact, not dumped:
+Ordinary wins and losses belong in the frontier ledger. Durable lessons should be written as short notes in that ledger rather than full logs or separate postmortem files.
 
 ## Existing Loop Designs
 
@@ -65,7 +65,7 @@ Risks:
 Token cost is high; agents may churn without progress; weak completion checks can let the loop stop too early; over-broad prompts can cause wandering.
 
 AutoML fit:
-Use this as the outer loop. Each iteration gets the current experiment board, dataset contract, metric contract, and one candidate direction.
+Use this as the outer loop. Each iteration gets the project card, current frontier ledger, and one candidate direction.
 
 ### 2. In-Session ReAct Loop
 
@@ -117,7 +117,7 @@ Risks:
 More orchestration complexity, more places for stale assumptions, and more context handoff failure.
 
 AutoML fit:
-Use specialist skills, not a chatty agent swarm. For example: `data-profile`, `feature-engineer`, `model-search`, `leakage-auditor`, `metric-reviewer`, `experiment-distiller`.
+Use specialist skills, not a chatty agent swarm. For example: `data-profile`, `feature-engineer`, `model-search`, `leakage-auditor`, and `metric-reviewer`.
 
 ### 6. Evolutionary / Programmatic Evaluator Loop
 
@@ -130,7 +130,7 @@ Risks:
 The loop will exploit evaluator flaws. In ML, that means leaderboard overfit, validation leakage, shortcut features, time leakage, or accidental training on test data.
 
 AutoML fit:
-Use for bounded candidate generation: feature transforms, model configs, ensembling recipes, and training code. Gate each candidate with leakage and reproducibility checks before admission.
+Use for bounded candidate generation: feature transforms, model configs, ensembling recipes, and training code. Keep routine selection on the trusted validation evaluator, and escalate leakage/reproducibility checks when risk changes or a candidate becomes final/recommended.
 
 ## AutoML-Specific Failure Modes
 
@@ -143,10 +143,10 @@ Critical failure modes:
 - Target leakage: features that encode the label, future outcome, post-event information, or proxies unavailable at prediction time.
 - Temporal leakage: random splits on time-dependent data, rolling features that peek forward, or features computed with full-period aggregates.
 - Entity leakage: same user/customer/device/patient/order family appearing in train and evaluation splits when deployment requires entity-level generalization.
-- Multi-test leakage: repeated validation/leaderboard probing without accounting for search budget.
+- Multi-test leakage: repeated validation probing without accounting for search budget.
 - Metric gaming: optimizing the wrong metric, a metric with unstable confidence intervals, or a metric that ignores calibration, class imbalance, cost, latency, or fairness constraints.
 - Data contamination from generated artifacts: features, labels, or metadata derived from evaluation data during exploratory analysis.
-- Irreproducible wins: random seeds, nondeterministic GPU ops, unpinned data snapshots, or incomplete experiment manifests.
+- Irreproducible wins: random seeds, nondeterministic GPU ops, unpinned data snapshots, or missing command/code references for frontier-advancing runs.
 
 Scikit-learn's common pitfalls guidance is blunt on this point: split before preprocessing, never call `fit`/`fit_transform` on test data, and use pipelines to keep transformations inside the right fold. Its nested cross-validation guidance also warns that model selection and performance estimation on the same data produces optimistic scores.
 
@@ -162,23 +162,17 @@ skills/
   model-search.md
   leakage-auditor.md
   metric-reviewer.md
-  experiment-distiller.md
 
 experiments/
   README.md
-  registry.jsonl
-  runs/<run_id>/
-    manifest.json
-    plan.md
-    metrics.json
-    leakage_report.md
-    notes.md
+  project_card.md
+  frontier.jsonl
 
 docs/
   research/
 ```
 
-The skills should be plain markdown so different coding agents can run them. The experiment registry should be structured so non-LLM tools can audit it.
+The skills should be plain markdown so different coding agents can run them. The frontier ledger should be structured so agents and non-LLM tools can compare results.
 
 ### Iteration Contract
 
@@ -186,29 +180,22 @@ Each iteration should have a strict contract:
 
 ```text
 Inputs:
-  dataset contract
-  split contract
-  metric contract
-  current leaderboard
-  prior distilled lessons
+  project card
+  current frontier ledger
   one candidate hypothesis
 
 Agent actions:
   implement one experiment
   run training/evaluation only through approved commands
-  write manifest and notes
+  append one frontier record
 
 Verifier actions:
-  run reproducibility check
-  run leakage audit
-  run metric audit
-  decide admit/reject
+  run leakage or metric review only for setup changes, risky changes, close calls, or final candidates
 
 Outputs:
-  metrics.json
-  leakage_report.md
-  experiment summary
-  distilled memory update
+  frontier JSONL row
+  optional metrics artifact
+  optional short review note
 ```
 
 ### Leakage-Auditor Skill Scope
@@ -226,7 +213,7 @@ The leakage auditor should be adversarial and specific. It should ask:
 - Are cached features keyed by split/fold to prevent cross-run contamination?
 - Is the final holdout still sealed?
 
-The auditor should produce a blocking verdict: `PASS`, `WARN`, or `FAIL`. `FAIL` prevents leaderboard admission.
+The auditor should produce a blocking verdict: `PASS`, `WARN`, or `FAIL`. `FAIL` prevents recommendation and should block frontier use until fixed when leakage affects the candidate.
 
 ### Metric-Reviewer Skill Scope
 
@@ -240,36 +227,32 @@ The metric reviewer should check:
 - The model is not selected only on a single lucky split.
 - The claimed improvement clears a minimum practical effect threshold.
 
-### Memory Distillation
+### Frontier Notes
 
-Do not append full logs to the prompt forever. Distill each run into a compact record:
+Do not append full logs to the prompt forever. Ordinary runs should be recorded in `frontier.jsonl`, with durable lessons captured as short fields:
 
 ```json
 {
   "run_id": "...",
-  "dataset_hash": "...",
   "hypothesis": "...",
-  "changes": ["..."],
-  "metric_delta": {"validation_auc": 0.004},
-  "leakage_verdict": "PASS",
-  "cost": {"train_seconds": 93},
+  "change_summary": "...",
+  "metric_delta": 0.004,
   "lesson": "Target encoding helped only when nested inside CV folds.",
-  "avoid": "Do not compute category means before splitting."
+  "next_hint": "Try regularized target encoding with nested folds."
 }
 ```
 
-Over time this becomes the loop's retrieval memory: successful patterns, forbidden patterns, and dataset-specific warnings.
+Over time the frontier ledger becomes the loop's retrieval state: successful patterns, failed patterns, forbidden patterns, and dataset-specific warnings.
 
 ## Design Recommendation
 
 Start with a simple, portable markdown-driven Ralph loop rather than a full multi-agent runtime. The minimum viable system should have:
 
 - A single outer fresh-session loop skill: `automl-loop.md`.
-- A structured experiment registry.
+- A compact `project_card.md`.
+- A structured `frontier.jsonl`.
 - A deterministic validation command.
-- A leakage-auditor skill with blocking power.
-- A metric-reviewer skill with blocking power.
-- A distillation step that writes compact memory.
+- Leakage-auditor and metric-reviewer skills for setup changes, risky changes, close calls, and final/recommended candidates.
 
 Do not expose the sealed test set to normal loop iterations. A human or a separate release gate should trigger final test evaluation after the loop has stopped selecting models.
 

@@ -7,7 +7,7 @@ description: Propose and implement fold-safe feature engineering changes inside 
 
 Use this skill when the selected experiment changes features, transforms, encodings, imputations, or feature selection.
 
-A feature-engineering worker session may include a bounded inner search over a declared feature family, such as comparing a small set of encodings, binning strategies, lag windows, or feature-selection thresholds. The search must be fold-safe and recorded well enough to reproduce any promoted candidate.
+A feature-engineering worker session may include a bounded inner search over a declared feature family, such as comparing a small set of encodings, binning strategies, lag windows, or feature-selection thresholds. The search must be fold-safe and recorded well enough to reproduce any frontier-advancing candidate.
 
 ## Hard Rules
 
@@ -17,17 +17,17 @@ A feature-engineering worker session may include a bounded inner search over a d
 - For time-series features, use only information available at prediction time.
 - For grouped data, do not aggregate across validation/test groups in ways unavailable at training time.
 - Define feature-search spaces and selection criteria before execution when comparing multiple feature variants.
-- Record enough detail to reproduce promoted feature variants and any rejected variant that influences future choices.
+- Record enough detail to reproduce frontier-advancing feature variants and any rejected variant that influences future choices.
 
 ## Procedure
 
-1. Read dataset, split, and metric contracts.
+1. Read the project card.
 2. Pick one feature hypothesis.
 3. If comparing variants, define the bounded feature-search space and selection rule before running it.
-4. Write the hypothesis and leakage risks into the run plan.
+4. Write the hypothesis and leakage risks into the frontier record or run notes.
 5. Implement the feature change in the smallest reasonable surface area.
 6. Add or run checks that prove the transform is fit only on allowed training data.
-7. Record promoted feature names, source columns, important variants tried, and whether each feature is learned, deterministic, target-aware, temporal, or grouped.
+7. Record selected feature names, source columns, important variants tried, and whether each feature is learned, deterministic, target-aware, temporal, or grouped.
 
 ## Preferred Feature Categories
 
@@ -51,7 +51,7 @@ Start with interpretable, bounded changes:
 
 ## Output
 
-Update the run artifacts with:
+Update the frontier record or run notes with:
 
 - feature hypothesis
 - implementation summary

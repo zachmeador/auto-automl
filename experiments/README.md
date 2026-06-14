@@ -2,41 +2,34 @@
 
 The root `experiments/` directory contains reusable templates and framework documentation only.
 
-Do not write task-specific run artifacts here. All task-specific experiment work belongs under `projects/<project_id>/`.
+Task-specific experiment workspaces live under `projects/<project_id>/`.
 
-Recommended run layout:
+Default loop layout:
 
 ```text
 projects/<project_id>/
   experiments/
-    dataset_contract.md
-    split_contract.md
-    metric_contract.md
-    registry.jsonl
-    memory.jsonl
-    runs/<run_id>/
-      manifest.json
-      plan.md
-      metrics.json
-      leakage_report.json
-      leakage_report.md
-      metric_review.md
-      notes.md
+    project_card.md
+    frontier.jsonl
 ```
 
-`manifest.json` should conform to `schemas/experiment-manifest.schema.json`.
+`frontier.jsonl` is a compact ledger of worker-session outcomes. Rows use `schemas/frontier-record.schema.json` when possible.
 
-`leakage_report.json` should conform to `schemas/leakage-report.schema.json`.
+## Frontier Rules
 
-Each admitted or rejected run should append one JSON object to a project-local registry file, typically `projects/<project_id>/experiments/registry.jsonl`, conforming to `schemas/registry-record.schema.json`.
+- The frontier advances when a candidate improves the declared validation metric under the project card's comparison rule.
+- The first valid baseline can advance the frontier without a prior comparison.
+- Non-improving attempts can still be logged when they inform future search.
+- The final holdout is never used for frontier advancement.
 
-The registry is intentionally JSONL so agents and scripts can append records without rewriting a central database.
+## Review Rules
 
-Templates for dataset, split, metric, run plan, leakage report, metric review, registry, and memory records are in `experiments/templates/`.
+Leakage and metric review checklists are most relevant when:
 
-## Admission Rules
+- split, evaluator, labels, joins, or data availability semantics changed
+- high-risk features were added
+- validation improved suspiciously
+- the comparison is a close call and the project card has a close-call rule
+- the candidate is being recommended to the user
 
-- `leakage_verdict` must be `PASS` for leaderboard admission.
-- `metric_review_verdict` must be `PASS` for leaderboard admission.
-- Runs with `WARN` may be retained for memory but should not become default model candidates without human review.
-- Runs with `FAIL` must be marked rejected and distilled into "avoid" memory.
+Review results can be represented in the frontier row or a short project-local note. Routine search does not need a separate run-governance bundle.

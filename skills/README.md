@@ -4,44 +4,21 @@ These files are plain markdown skills intended for agentic coding tools such as 
 
 They are not tied to one skill runtime. A harness may pass one skill as the active instruction file, or an agent may read the relevant skill directly.
 
-Execution, sandboxing, long-running loop scheduling, and IDE integration are responsibilities of the host agent environment. The skills here define what each AutoML loop step must do and record.
+Execution, sandboxing, long-running loop scheduling, and IDE integration are responsibilities of the host agent environment. The skills here define how to keep the AutoML loop bounded, comparable, and reproducible.
 
-The core skills are also tooling-neutral. Do not steer users toward a specific AutoML, tracking, deployment, or cloud platform unless they ask for it or the project already uses it.
+## Instruction Entrypoint
 
-## Recommended Invocation Pattern
-
-Use `AGENTS.md` as the entry point. It defines how to find the child project, contracts, registry, memory, loop skill, verification gates, and stop policy.
-
-Run a fresh worker session:
-
-```text
-Read AGENTS.md, skills/automl-loop.md, the dataset contract, the split contract, the metric contract, and the current experiment registry. If the project stop policy is not already satisfied, make one practical unit of progress and write durable artifacts only for promoted candidates or lessons that should influence future work.
-```
-
-Then run independent audit/review passes:
-
-```text
-Read skills/leakage-auditor.md and audit projects/<project_id>/experiments/runs/<run_id>/.
-Read skills/metric-reviewer.md and review projects/<project_id>/experiments/runs/<run_id>/.
-Read skills/experiment-distiller.md and update memory only after audit/review.
-```
-
-After the worker session, check the project stop policy again and report `application_loop_status` as `continue` or `stop`. The host agent environment may launch another fresh worker session when status is `continue`.
-
-A worker session may include bounded inner algorithmic search, such as CV, HPO, threshold search, feature selection, ablations, or repeated seeds. Those inner searches are allowed when they stay within budget, avoid the final holdout, and leave enough detail to reproduce promoted candidates.
-
-For Python projects, create or reuse a `pyproject.toml` in `projects/<project_id>/` and run commands from that directory with `uv --cache-dir .uv-cache run ...`. Do not run task-specific code with bare system `python`, `python3`, or `pip` from the repository root.
+`AGENTS.md` is the operational entrypoint. It explains how to find the child project, project card, frontier ledger, loop skill, review checklists, and stop policy.
 
 ## Skill Files
 
 - `automl-loop.md`: orchestrates one Ralph-style worker session.
-- `data-profile.md`: creates dataset, split, and metric contracts.
+- `data-profile.md`: creates the project card.
 - `feature-engineer.md`: proposes and implements fold-safe feature changes.
 - `model-search.md`: proposes and implements bounded model/HPO changes.
-- `leakage-auditor.md`: red-teams leakage and split integrity.
-- `metric-reviewer.md`: validates objective, metric, and claimed improvement.
-- `experiment-distiller.md`: summarizes runs into compact memory records.
+- `leakage-auditor.md`: checks leakage and split integrity when risk changes.
+- `metric-reviewer.md`: checks evaluator correctness and close metric calls.
 
 ## Extension Packs
 
-Tool-specific skills should live outside the core set as optional packs. A Databricks + MLflow 3 pack is a good future candidate for projects that already use that stack or explicitly need deployment/model-registry guidance.
+Tool-specific skills should live outside the core set as optional packs.

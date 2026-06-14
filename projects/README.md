@@ -1,8 +1,8 @@
 # Project Workspaces
 
-Agents should create all task-specific ML work under `projects/<project_id>/`.
+`projects/<project_id>/` is the home for task-specific ML workspaces.
 
-The repository root is the reusable control layer: skills, schemas, docs, and templates. Child project directories are for generated training code, data adapters, configs, notebooks, data splits, experiment records, model artifacts, outputs, and project-local scripts.
+The repository root is the reusable control layer: skills, schemas, docs, and templates. Child project directories are for generated training code, data adapters, configs, notebooks, data splits, project cards, frontier ledgers, model artifacts, outputs, and project-local scripts.
 
 Recommended layout:
 
@@ -14,20 +14,22 @@ projects/<project_id>/
   src/
   configs/
   experiments/
+    project_card.md
+    frontier.jsonl
   data/
   notebooks/
   outputs/
 ```
 
+The default loop state is `experiments/project_card.md` plus `experiments/frontier.jsonl`.
+
 ## Python Runtime
 
-Python projects should use project-local `uv`.
+Python project workspaces are designed around project-local `uv` environments when Python experiment code exists.
 
-- Create or reuse `pyproject.toml` in the child project.
-- Run commands from `projects/<project_id>/`.
-- Use `uv --cache-dir .uv-cache run <command>`.
-- Prefer `pyproject.toml` scripts for repeated commands.
-- Do not call bare `python`, `python3`, or `pip` from the repository root for task-specific work.
-- Keep `.venv/`, `.uv-cache/`, and `uv.lock` inside the child project.
+- `pyproject.toml` describes project-local Python dependencies and scripts.
+- `uv.lock` captures dependency resolution when present.
+- `.venv/` and `.uv-cache/` are project-local runtime/cache directories.
+- Stable evaluator commands usually live in `pyproject.toml` scripts or existing project tooling.
 
-Keep final holdout data and labels sealed according to the split contract. Do not copy sealed final holdout labels into project workspaces during normal loop iterations.
+Final holdout data and label access are governed by the project card.

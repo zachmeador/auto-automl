@@ -21,11 +21,12 @@ while stop policy is not satisfied and user has not interrupted:
   launch or continue an AutoML worker session
   run one bounded experiment or search family
   evaluate only on approved validation data
-  admit only if leakage and metric gates pass
-  distill memory
+  advance or discard the validation frontier
+  append one compact frontier record
+  escalate leakage or metric review only when risk changes
 ```
 
-The `autoresearch` keep/discard frontier can be copied. Its permissive repeated validation probing should not be copied blindly for general AutoML, where leakage and metric misuse are easier to introduce.
+The `autoresearch` keep/discard frontier can be copied. General AutoML still needs split, holdout, preprocessing, and metric safeguards, but those safeguards should protect the evaluator rather than turn every routine iteration into a release review.
 
 ## What `autoresearch` Does
 
@@ -101,21 +102,21 @@ So the `autoresearch` pattern should influence `auto-automl` at the orchestratio
 
 Useful direct mappings:
 
-- `program.md` maps to `AGENTS.md`, project contracts, and markdown skills.
+- `program.md` maps to `AGENTS.md`, `project_card.md`, and markdown skills.
 - `train.py` maps to project-local experiment code under `projects/<project_id>/`.
-- `prepare.py` maps to immutable data, split, and evaluation contracts.
-- `val_bpb` maps to the metric contract's primary validation metric.
-- `results.tsv` maps to `projects/<project_id>/experiments/registry.jsonl` plus compact `memory.jsonl`.
-- "keep winning commit, reset loser" maps to admitted registry candidates and project-local run artifacts.
-- "never stop until interrupted" maps to an unattended application loop governed by `metric_contract.md`.
+- `prepare.py` maps to fixed split/evaluator code and the project card.
+- `val_bpb` maps to the project card's primary validation metric.
+- `results.tsv` maps to `projects/<project_id>/experiments/frontier.jsonl`.
+- "keep winning commit, reset loser" maps to frontier advancement and optional discard/revert.
+- "never stop until interrupted" maps to an unattended application loop governed by `project_card.md`.
 
 Important differences:
 
 - `auto-automl` should not put task-specific files at repo root.
-- `auto-automl` should not admit a run just because validation improved.
-- `auto-automl` needs explicit leakage and metric review gates.
+- `auto-automl` should not recommend or certify a run just because validation improved.
+- `auto-automl` needs explicit leakage and metric review gates for setup changes, high-risk changes, surprising jumps, and final/recommended candidates.
 - `auto-automl` should preserve a sealed final holdout outside normal search.
-- `auto-automl` should keep the core markdown and contracts runtime-agnostic; any always-on runner belongs in a host harness or optional extension pack.
+- `auto-automl` should keep the core markdown and project records runtime-agnostic; any always-on runner belongs in a host harness or optional extension pack.
 
 ## Recommended Adaptation
 
@@ -124,9 +125,9 @@ Add an explicit `autoresearch`-style unattended mode to the project guidance:
 ```text
 Unattended mode:
   Continue launching AutoML worker sessions until one of these happens:
-    - the metric contract stop policy is satisfied
+    - the project card stop policy is satisfied
     - the runtime/search budget is exhausted
-    - a blocking leakage or metric contract issue prevents valid progress
+    - a blocking split/evaluator/holdout issue prevents valid progress
     - the human interrupts the loop
 ```
 
@@ -136,7 +137,7 @@ For a host that can create fresh agent processes, prefer:
 
 ```text
 host loop:
-  start fresh agent with AGENTS.md + project contracts + current registry/memory
+  start fresh agent with AGENTS.md + project_card.md + frontier.jsonl
   wait for worker report
   inspect stop policy
   repeat unless stopped
@@ -147,16 +148,16 @@ For an interactive Codex or Claude Code session where fresh relaunch is not avai
 ```text
 single-session unattended loop:
   keep iterating in the same chat
-  periodically summarize memory to files
+  keep context small and append frontier rows
   avoid flooding context with logs
   stop only on stop policy, blocking issue, budget, or human interrupt
 ```
 
 The first version is more faithful to Ralph fresh-context principles. The second version is closer to `autoresearch` operator ergonomics and is often what users actually mean when they ask an agent to "keep going."
 
-## Suggested Contract Additions
+## Suggested Project Card Additions
 
-The metric contract should include:
+The project card should include:
 
 - `mode`: `single_worker` or `unattended`
 - `max_experiments`
@@ -165,22 +166,24 @@ The metric contract should include:
 - `minimum_practical_improvement`
 - `stop_when_no_improvement_after`
 - `final_holdout_release_gate`
+- `evaluator_command`
+- `frontier_ledger`
 
 The worker report should include:
 
-- current best admitted run
+- current frontier run
 - whether the latest candidate advanced the frontier
 - stop policy status
 - validation probe count
 - next hypothesis
 - whether unattended continuation is allowed
 
-The registry should distinguish:
+The frontier ledger should distinguish:
 
-- `advanced_frontier`: candidate became the current best admitted run
-- `admitted`: candidate passed gates but did not beat the frontier
-- `rejected`: candidate failed a gate or was not comparable
-- `scratch`: candidate was informative but not admitted
+- `advanced`: candidate became the current frontier
+- `kept`: candidate did not advance but is useful to preserve
+- `discarded`: candidate was worse and not useful
+- `blocked`: candidate could not be evaluated or violated a guard
 
 ## Practical Guidance For This Repo
 
@@ -199,17 +202,17 @@ Do not adopt directly:
 - root-level task artifacts
 - unrestricted repeated validation probing
 - reset-based discard as the only record of failed attempts
-- no separate leakage audit
+- no separate leakage audit for risky or final candidates
 - no sealed final holdout
 - one universal always-on runner in core
 
 The best product direction is:
 
 ```text
-portable contracts + markdown skills
+portable project cards + markdown skills
   + optional unattended host loop
   + autoresearch-style frontier advancement
-  + AutoML-specific leakage and metric gates
+  + AutoML-specific leakage and metric escalation gates
 ```
 
 ## Source Notes

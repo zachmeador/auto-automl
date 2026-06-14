@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-automl.local/schemas/frontier-record.schema.json",
+  "title": "AutoAutoML Frontier Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "project_id",
+    "created_at",
+    "hypothesis",
+    "change_summary",
+    "command",
+    "cwd",
+    "metric",
+    "status"
+  ],
+  "properties": {
+    "run_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "hypothesis": {"type": "string"},
+    "change_summary": {"type": "string"},
+    "command": {"type": "string"},
+    "cwd": {
+      "type": "string",
+      "pattern": "^projects/[^/]+/?$"
+    },
+    "code_ref": {"type": "string"},
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "value", "direction"],
+      "properties": {
+        "name": {"type": "string"},
+        "value": {"type": "number"},
+        "direction": {
+          "type": "string",
+          "enum": ["maximize", "minimize"]
+        }
+      }
+    },
+    "baseline_run_id": {
+      "type": ["string", "null"]
+    },
+    "metric_delta": {
+      "type": ["number", "null"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["advanced", "kept", "discarded", "blocked", "not_run"]
+    },
+    "keep_reason": {"type": "string"},
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^projects/[^/]+/"
+      }
+    },
+    "risk_flags": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "audit_verdict": {
+      "type": "string",
+      "enum": ["PASS", "WARN", "FAIL"]
+    },
+    "metric_review_verdict": {
+      "type": "string",
+      "enum": ["PASS", "WARN", "FAIL"]
+    },
+    "next_hint": {"type": "string"}
+  }
+}

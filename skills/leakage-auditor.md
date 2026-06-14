@@ -1,39 +1,43 @@
 ---
 name: leakage-auditor
-description: Red-team one AutoML run for train/eval/test leakage, target leakage, temporal leakage, group leakage, and final-holdout misuse.
+description: Check AutoML setup changes, high-risk experiments, or final candidates for train/eval/test leakage, target leakage, temporal leakage, group leakage, and final-holdout misuse.
 ---
 
 # Leakage Auditor Skill
 
-Use this skill after an experiment run and before leaderboard admission. Be adversarial. The default posture is that a surprising metric improvement is suspicious until explained.
+Use this checklist when leakage risk can change the meaning of validation results. It is not required for every routine frontier iteration.
+
+Use it for:
+
+- initial split/evaluator setup
+- changes to split generation, evaluator code, data joins, caches, or label construction
+- high-risk feature families such as target encodings, aggregates, lags, text/vector features, or identifiers
+- suspicious validation improvements
+- final or user-recommended candidates
 
 ## Inputs
 
-- Dataset contract
-- Split contract
-- Run plan
+- Project card
+- Frontier record or run notes
 - Experiment code or diff
-- Manifest
 - Metrics
-- Feature list
+- Feature list, if relevant
 - Any cached artifacts touched by the run
 
-All inspected task-specific artifacts should be under `projects/<project_id>/`. Treat unexpected project artifacts outside that child directory as at least `WARN`, and as `FAIL` when they could influence training, validation, leakage, or model selection.
+All inspected task-specific artifacts should be under `projects/<project_id>/`.
 
 ## Verdicts
 
 - `PASS`: no blocking leakage found.
 - `WARN`: no confirmed leakage, but evidence is incomplete or risk remains.
-- `FAIL`: confirmed or highly likely leakage; run cannot be admitted.
+- `FAIL`: confirmed or highly likely leakage; the candidate cannot be recommended or used as the frontier until fixed.
 
-## Audit Checklist
+## Checklist
 
 Split integrity:
 
-- Are train, validation, and test boundaries explicit?
-- Are split artifact hashes recorded?
+- Are train, validation, and final holdout boundaries explicit?
 - Did any code regenerate splits inconsistently?
-- Are split files under `projects/<project_id>/` or an explicitly approved external read-only source?
 - Are groups isolated when required?
 - Are time splits chronological when required?
 
@@ -41,13 +45,13 @@ Final holdout:
 
 - Did any loop step read final holdout labels or metrics?
 - Did any code path train, tune, select, calibrate, threshold, or early-stop using final holdout data?
-- Was final holdout used more than once or used before model selection stopped?
+- Was final holdout used before model selection stopped?
 
 Preprocessing:
 
 - Are imputers, scalers, encoders, feature selectors, PCA, vectorizers, oversamplers, and target encoders fit only on training folds?
 - Are validation/test rows transformed with fitted training objects only?
-- Are caches under `projects/<project_id>/` and keyed by split and fold?
+- Are caches keyed by split and fold when learned preprocessing is cached?
 
 Target leakage:
 
@@ -58,31 +62,25 @@ Target leakage:
 Temporal leakage:
 
 - Do rolling windows exclude the current/future target period?
-- Are timestamp availability and prediction horizon explicit?
+- Are timestamp availability and prediction horizon explicit when time matters?
 - Are lag features shifted correctly?
 
 Entity leakage:
 
 - Can duplicate or near-duplicate entities cross split boundaries?
-- Are household/user/customer/device/patient/order family relations handled?
+- Are household/user/customer/device/patient/order family relations handled when relevant?
 
-Metric/selection leakage:
+Validation probing:
 
-- Has repeated validation probing effectively turned validation into training?
-- Was the metric chosen after seeing results?
-- Were failed experiments hidden from the registry?
+- Is the loop tracking validation probes or run attempts in the frontier ledger?
+- Is model selection still using only validation, with final holdout sealed?
 
 ## Output
 
-Write `leakage_report.json` conforming to `schemas/leakage-report.schema.json`, plus a human-readable `leakage_report.md`, in `projects/<project_id>/experiments/runs/<run_id>/`.
+Write a short verdict in the frontier record or a short project-local note:
 
-Required fields:
-
-- `verdict`
-- `blocking_findings`
-- `warnings`
-- `checks_performed`
-- `evidence`
-- `required_fixes`
-
-If verdict is `FAIL`, include the shortest concrete fix path.
+- verdict
+- blocking findings
+- warnings
+- evidence
+- required fixes

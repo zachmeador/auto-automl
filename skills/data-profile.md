@@ -1,68 +1,43 @@
 ---
 name: data-profile
-description: Create dataset, split, and metric contracts before AutoML experiments begin.
+description: Create the minimal project card for AutoML search.
 ---
 
 # Data Profile Skill
 
-Use this skill before model search or feature engineering. Its output defines what the AutoML loop is allowed to optimize.
+Use this skill before model search or feature engineering. Its output is one compact project card that defines what the loop can safely optimize.
 
-## Outputs
+## Output
 
-Write contracts under the child project workspace. Recommended names:
+Write:
 
-- `projects/<project_id>/experiments/dataset_contract.md`
-- `projects/<project_id>/experiments/split_contract.md`
-- `projects/<project_id>/experiments/metric_contract.md`
+- `projects/<project_id>/experiments/project_card.md`
 
-Do not write task-specific contracts to the repository root or root-level `experiments/`.
+Do not write task-specific project cards to the repository root or root-level `experiments/`.
 
-## Dataset Contract Checklist
+## Project Card Fields
 
-Record:
+Record only what the loop needs to start safely:
 
-- target column and task type
-- prediction-time meaning of one row
-- allowed input columns
-- explicitly forbidden columns
-- timestamp column and prediction horizon, if any
-- entity/group identifier, if any
-- known duplicate semantics
-- missing-value semantics
-- label generation process, if known
-- deployment setting and data availability constraints
+- project id and project root
+- task type and target
+- one-row meaning and prediction-time meaning, if known
+- train/validation split rule or artifact paths
+- sealed final holdout policy
+- primary validation metric and maximize/minimize direction
+- evaluator command and expected metric output
+- current frontier baseline, if any
+- search budget or stop policy
+- forbidden columns, post-outcome fields, and high-risk feature families
+- group/time constraints when relevant
 
-## Split Contract Checklist
+## Blocking Unknowns
 
-Record:
-
-- train/validation/test split method
-- exact split artifact paths or generation command
-- random seed or deterministic split rule
-- group isolation rule, if any
-- temporal ordering rule, if any
-- final holdout location and access policy
-- split hashes when available
-
-## Metric Contract Checklist
-
-Record:
-
-- primary metric
-- maximize/minimize direction
-- secondary tie-breakers
-- baseline metric
-- minimum practical improvement threshold
-- repeated-seed or confidence interval requirement
-- runtime/memory/inference constraints
-- fairness, calibration, recall-at-precision, or cost constraints if relevant
-
-## Required Warnings
-
-If any of these are unknown, mark the contract incomplete and block model search:
+Block model search only when one of these is unknown:
 
 - target definition
-- prediction-time data availability
-- split semantics
-- primary metric
-- final holdout policy
+- train/validation split or evaluator command
+- primary metric and direction
+- final holdout access policy
+
+Other missing details should be marked as risks in the project card and resolved when they matter.

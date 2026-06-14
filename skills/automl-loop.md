@@ -1,142 +1,110 @@
 ---
 name: automl-loop
-description: Run one fresh-context AutoML worker session that explores, evaluates, optionally promotes a candidate, and reports whether the application loop should continue.
+description: Run one Ralph-style AutoML worker session that mutates a bounded surface, evaluates on validation, updates the frontier ledger, and reports whether the application loop should continue.
 ---
 
 # AutoML Worker Session Skill
 
-Use this skill for one worker session inside the larger AutoML application loop. A worker session is a human-sized unit of progress, not necessarily one model fit and not the whole project unless the metric contract's stop policy says the project is done.
+Use this skill for one worker session inside a larger AutoML application loop. A worker session is a practical unit of progress, not necessarily one model fit and not the whole project unless the project card's stop policy says the project is done.
 
-## Terminology
+## Core Loop
 
-`Worker session` means one fresh-context Ralph worker invocation. It can include setup, debugging, baseline work, exploratory search, a model/feature experiment, or promotion of a candidate.
-
-Allowed inner loops include cross-validation, hyperparameter search, threshold search, feature selection, ablations, repeated seeds, and model-family searches when they are part of the declared experiment hypothesis.
-
-Inner loops should:
-
-- stay within the metric contract's runtime/cost/search budget
-- use only approved train/validation data
-- keep the final holdout sealed
-- record promoted trials or a reproducible search summary
-- report the selected candidate and selection criterion
-
-## Human-Shaped Workflow
-
-Work like a practical ML engineer:
-
-1. Orient on contracts, code, current best result, and recent lessons.
-2. Pick the smallest useful next move.
-3. Explore quickly inside `projects/<project_id>/`.
-4. Keep scratch work lightweight.
-5. Promote a candidate only when it is useful, reproducible, and worth comparing.
-6. Run leakage audit and metric review only for promoted registry candidates.
-7. Distill the useful lesson and next move.
-
-Scratch work can be informal, but it cannot violate split, holdout, or project-local rules. If scratch results influence the next session, summarize them in notes or memory.
+```text
+read project card + frontier
+-> choose one bounded change
+-> run the trusted validation evaluator
+-> compare against current frontier
+-> keep or discard the change
+-> append one compact frontier record
+-> recommend the next move
+```
 
 ## Inputs
 
 Required:
 
-- Dataset contract: source, target, prediction time, allowed features, unavailable features, entity/time semantics.
-- Split contract: train/validation/test definitions, group/time constraints, split artifact hashes if available.
-- Metric contract: objective metric, direction, project goal, stop policy, tie-breakers, minimum practical improvement, runtime budget.
-- Current registry or leaderboard.
-- Prior distilled memory, if available.
+- Project card: target, split rule/artifacts, primary validation metric, direction, evaluator command, sealed holdout rule, budget/stop policy, and known leakage risks.
+- Frontier ledger: current best validation result and meaningful prior attempts, typically `projects/<project_id>/experiments/frontier.jsonl`.
+- Current project code/config under `projects/<project_id>/`.
 
 Optional:
 
 - One user-provided hypothesis.
-- Existing baseline code.
 - Approved model/tool list.
 
 ## Hard Rules
 
-- Do not access sealed final holdout labels or metrics.
+- Do not access sealed final holdout labels or metrics during normal search.
 - Optimize validation only.
+- Use the same split and metric comparison rule as the project card unless the session objective is explicitly to fix the evaluator or split.
 - Keep all task-specific work under `projects/<project_id>/`.
-- Do not write project-specific code, contracts, data, outputs, run records, registries, or memory files at the repository root or under root-level `experiments/runs/`.
 - Keep the session focused on one practical objective or one tightly related experiment family.
-- You may run a bounded inner search inside that objective when the search budget and selection rule are clear.
-- Record enough detail to reproduce promoted candidates and scratch results that influence future choices.
-- A candidate is not admitted to the registry until leakage audit and metric review pass.
+- You may run bounded inner search, such as CV, HPO, threshold search, ablations, repeated seeds, or feature variants, when the search budget and selection rule are clear.
+- Record enough detail to reproduce frontier-advancing candidates and any scratch result that changes future choices.
 
 ## Python Runtime Rules
 
 For Python experiments:
 
-- Create or reuse `projects/<project_id>/pyproject.toml`.
+- Prefer an existing stable evaluator command.
+- If loop-created Python code needs project scaffolding, create or reuse `projects/<project_id>/pyproject.toml`.
 - Run commands from `projects/<project_id>/`.
-- Use `uv --cache-dir .uv-cache run <command>` instead of bare `python`, `python3`, `pip`, or a global environment.
-- Prefer `[project.scripts]` entries in `pyproject.toml` for repeatable prepare/train/evaluate/audit commands.
+- Prefer `uv --cache-dir .uv-cache run <command>` over bare `python`, `python3`, `pip`, or global environments.
 - Keep `uv.lock`, `.venv/`, and `.uv-cache/` inside `projects/<project_id>/`.
-- Record each command and repo-relative project working directory, for example `projects/<project_id>`, in the manifest.
+- Record the exact command and working directory in the frontier record.
 
 ## Procedure
 
 1. Rehydrate only relevant context.
-   - Read contracts, registry, and compact memory.
-   - Check whether the project stop policy is already satisfied before starting a new experiment.
-   - Identify the current best admitted baseline.
-   - Select one next hypothesis.
+   - Read `project_card.md` and `frontier.jsonl`.
+   - Check whether the stop policy is already satisfied before starting a new experiment.
+   - Identify the current frontier: best valid validation result under the declared comparison rule.
 
-2. Resolve the project workspace.
-   - If a project workspace does not exist, create `projects/<project_id>/`.
-   - Keep task-specific source code, configs, notebooks, data, outputs, contracts, registries, memory, and local scripts inside that child directory.
-   - Keep run metadata under `projects/<project_id>/experiments/runs/<run_id>/`.
-   - For Python projects, set up or reuse the project-local `uv` environment before running project code.
+2. Choose the session objective.
+   - Examples: establish a baseline, debug evaluator failure, try one model family, search one feature family, calibrate a threshold, or verify a promising candidate.
+   - Keep the objective small enough that the result can be interpreted.
 
-3. Choose the session objective.
-   - Examples: establish baseline, debug split integrity, try one model family, search one feature family, calibrate thresholds, or promote a promising candidate.
-   - Write a brief note before starting if the objective is non-obvious or risky.
-
-4. Explore or implement.
+3. Explore or implement.
    - Keep preprocessing inside train-fold-only pipelines.
-   - Use existing evaluation commands when present.
+   - Use the approved evaluator command when present.
    - If no command exists, create the smallest task-local command needed under `projects/<project_id>/`.
-   - Keep scratch outputs under the child project and summarize only what matters.
+   - Keep scratch outputs under the child project.
 
-5. Decide whether to promote a candidate.
-   - Promote when the result improves, establishes a baseline, fixes evaluation, reveals a durable lesson, or should influence future search.
-   - Do not promote throwaway debugging or obviously failed scratch attempts unless they teach an important avoidance lesson.
+4. Run validation and compare.
+   - Evaluate only on approved train/validation data.
+   - Compare with the current frontier using the metric direction, tie-breakers, and minimum improvement rule from the project card when specified.
+   - Treat missing minimum practical delta as "any real metric improvement advances" unless the project card says otherwise.
 
-6. For promoted candidates, write durable artifacts.
-   - Use `projects/<project_id>/experiments/runs/<run_id>/`.
-   - Capture metrics, runtime, random seeds, data hashes, code version, command lines, and a reproducible search summary.
-   - Write `metrics.json` and `manifest.json`.
-   - Write `plan.md` when the candidate involves nontrivial search, risk, or a new feature/model family. A short notes section is enough for simple baselines.
+5. Decide keep/discard.
+   - Advance the frontier when the candidate improves or establishes the first valid baseline.
+   - Keep non-improving changes only when they fix infrastructure, reduce risk, or encode a durable lesson.
+   - Discard or revert ordinary losing changes when the host environment supports that frontier style.
 
-7. For promoted registry candidates, run the gates.
-   - Apply `skills/leakage-auditor.md`.
-   - Apply `skills/metric-reviewer.md`.
-   - Do not admit the candidate if either gate fails.
+6. Append a compact frontier record.
+   - Write one JSONL row to `projects/<project_id>/experiments/frontier.jsonl`.
+   - Include run id, timestamp, hypothesis/change summary, command, code ref or diff path, metric value, comparison baseline, status, risk flags, and next hint.
+   - Store full logs separately only when they are needed for debugging or reproducibility.
 
-8. Update registry when appropriate.
-   - Append one structured registry record with `admitted: true` only if both gates pass.
-   - Write the registry under `projects/<project_id>/experiments/registry.jsonl`.
-   - Rejected promoted candidates may get registry records when they influenced future decisions.
+7. Run review checklists only when needed.
+   - Use `skills/leakage-auditor.md` when the session changes split/evaluator/data availability logic, introduces high-risk features, produces a suspicious metric jump, or prepares a final recommendation.
+   - Use `skills/metric-reviewer.md` when the evaluator or metric changed, the improvement is close or statistically uncertain, constraints matter, or the candidate is final/recommended.
+   - Put review verdicts or notes in the frontier record or a short project-local note.
 
-9. Distill memory.
-   - Apply `skills/experiment-distiller.md`.
-   - Keep memory compact. Do not paste long logs.
-
-10. Check project-level stop policy.
-   - Read `projects/<project_id>/experiments/metric_contract.md`.
+8. Check project-level stop policy.
+   - Read the stop policy from `project_card.md`.
    - Report whether a stop condition is satisfied.
    - If no stop condition is satisfied, report that the application loop should continue and include the next recommended hypothesis.
-   - If a stop condition is satisfied, report the stopping reason and current best admitted run.
+   - If a stop condition is satisfied, report the stopping reason and current frontier run.
 
 ## Worker Report
 
 The worker session reports:
 
 - session objective
-- promoted run id, if any
-- metric delta versus baseline, if measured
-- leakage verdict, if audited
-- metric review verdict, if reviewed
-- admitted/rejected/not promoted status
+- run id
+- metric value and delta versus frontier, if measured
+- frontier status: `advanced`, `kept`, `discarded`, `blocked`, or `not_run`
+- review verdicts only if review checklists were used
 - project stop condition status
 - application loop status: `continue` or `stop`
 - next recommended hypothesis

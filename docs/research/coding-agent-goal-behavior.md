@@ -6,13 +6,13 @@ Date: 2026-05-28
 
 `/goal` features in coding-agent apps are current-session continuation controls. They help an agent keep working toward a user-stated end condition without a new prompt after every turn. They are useful for long tasks with observable completion criteria, but they are not a full Ralph loop.
 
-For `auto-automl`, treat app-level goals as a convenience for running one bounded worker session. Do not let a Codex or Claude Code goal replace the project stop policy in `projects/<project_id>/experiments/metric_contract.md`, the split contract, leakage gates, metric review, or durable registry/memory records.
+For `auto-automl`, treat app-level goals as a convenience for running one bounded worker session. Do not let a Codex or Claude Code goal replace the project stop policy in `projects/<project_id>/experiments/project_card.md`, the fixed evaluator, the sealed holdout rule, or the frontier ledger.
 
 The key distinction:
 
 ```text
 app /goal: current thread keeps working until an app-level condition appears satisfied
-Ralph loop: external harness starts fresh workers, checks durable contracts, records state
+Ralph loop: external harness starts fresh workers, checks project card state, records frontier rows
 ```
 
 ## Behavior Observed In Current Apps
@@ -83,7 +83,7 @@ They are weaker when success depends on hidden state, external policy, statistic
 
 ### Scripted Stop Hook Or Deterministic Gate
 
-Claude Code Stop hooks and repo-local verification scripts are closer to a durable control surface because a script can inspect files, run commands, and return a deterministic decision. For `auto-automl`, deterministic gates should check metric artifacts, registry schema, split hashes, leakage reports, and final-holdout access policy.
+Claude Code Stop hooks and repo-local verification scripts are closer to a durable control surface because a script can inspect files, run commands, and return a deterministic decision. For `auto-automl`, deterministic gates should check the evaluator command, frontier records, split/holdout policy, and any required leakage or metric review artifacts.
 
 Prompt-based stop hooks still have the same transcript-evidence limitation as model-evaluated goals.
 
@@ -93,7 +93,7 @@ A Ralph loop is an external orchestration pattern:
 
 ```text
 durable task/spec state -> fresh agent session -> one worker move
-                         -> verification -> registry/memory update
+                         -> validation -> frontier ledger update
                          -> stop-policy check -> maybe launch next worker
 ```
 
@@ -109,7 +109,7 @@ Its important property is not just "keep going." It is fresh-context repetition 
 | Claude Code `/loop` | Active session | User stop or Claude's own done judgment | Current session context | Useful for polling or repeated maintenance, weak as an ML stop policy |
 | Cursor `/auto-run` | Active Cursor CLI session | Tool-call approval behavior, not a goal condition | Current session context | Useful for reducing prompts, not a stop policy |
 | Aider auto-lint/test | Active aider session | Command failures feed repair attempts | Lint/test command output | Useful inner feedback, not an outer loop |
-| Ralph loop | External harness | Project contracts and verification gates | Durable files, commands, registry, memory | Best outer loop for `auto-automl` |
+| Ralph loop | External harness | Project card, evaluator, and stop policy | Durable files, commands, frontier ledger | Best outer loop for `auto-automl` |
 
 ## Recommended `auto-automl` Usage
 
@@ -117,9 +117,9 @@ Use app goals to run exactly one worker session:
 
 ```text
 /goal Run one AutoML worker session for project <project_id> following AGENTS.md.
-Read the dataset, split, and metric contracts. If the project stop policy is already
+Read the project card and frontier ledger. If the project stop policy is already
 satisfied, report the reason and stop. Otherwise make one practical unit of progress,
-apply leakage and metric gates for any promoted candidate, update durable state, and
+run the fixed validation evaluator, append one compact frontier record, and
 finish by reporting application_loop_status and the next recommended hypothesis.
 Do not inspect or optimize against sealed final holdout metrics.
 ```
@@ -128,8 +128,8 @@ For Claude Code, phrase the condition so the evaluator can judge transcript evid
 
 ```text
 /goal The transcript shows that one AutoML worker session for project <project_id>
-completed: it reports the current best admitted run, whether the metric-contract stop
-policy says continue or stop, any leakage/metric gate verdict for promoted candidates,
+completed: it reports the current frontier run, whether the project-card stop
+policy says continue or stop, any leakage/metric review verdict if escalation was needed,
 and the next recommended hypothesis if continuing.
 ```
 
@@ -147,13 +147,13 @@ Transcript-only blindness:
 Claude Code documents that the goal evaluator does not run tools. If the worker forgets to print a test result or path, the evaluator may not have enough evidence.
 
 Stop-policy substitution:
-The agent may treat "the goal is done" as "the AutoML project is done." In this repo, only `projects/<project_id>/experiments/metric_contract.md` defines project stop conditions.
+The agent may treat "the goal is done" as "the AutoML project is done." In this repo, `projects/<project_id>/experiments/project_card.md` defines project stop conditions.
 
 Context accumulation:
 App goals keep the same active session running. For long AutoML searches, stale context and incidental logs can bias future choices. Use Ralph-style fresh workers for the outer application loop.
 
 Validation leakage:
-Repeated app-goal iterations can overfit validation metrics if the metric contract does not limit search budget and leakage review. Every admitted candidate still needs the leakage-auditor and metric-reviewer gates.
+Repeated app-goal iterations can overfit validation metrics if the project card does not limit search budget or track probes. Final/recommended candidates and risky changes still need leakage and metric review.
 
 ## Design Recommendation
 
@@ -169,8 +169,9 @@ The repo's invariant should remain:
 
 ```text
 host app goals may drive a worker
-metric contracts decide project completion
-leakage and metric review decide registry admission
+project cards decide project completion
+frontier ledgers record routine search
+leakage and metric review protect risky or final recommendations
 sealed final holdout remains outside normal loops
 ```
 
