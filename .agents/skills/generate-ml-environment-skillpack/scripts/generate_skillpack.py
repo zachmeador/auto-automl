@@ -183,6 +183,7 @@ description: {yaml_quote(description)}
 - Keep credentials out of prompts, logs, artifacts, and generated files. Resolve only the recorded secret references at execution time.
 - State when a required capability is unavailable and stop before fabricating infrastructure.
 - Prefer immutable identifiers for datasets, runs, artifacts, models, and releases.
+- Default tabular working snapshots to Apache Parquet. Preserve upstream raw files and record the conversion plus fingerprints for both raw and derived data.
 - Begin with read-only checks. Do not infer permission for production mutations from a diagnostic or build request.
 '''
     openai_yaml = f'''interface:

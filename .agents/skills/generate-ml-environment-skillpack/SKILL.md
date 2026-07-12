@@ -34,6 +34,7 @@ Turn one declarative environment manifest into a small pack of operational skill
 ## Contract rules
 
 - Keep these capabilities distinct even when one product implements several: compute, data, metadata, artifacts, experiments, registry, serving, observability, identity, and network.
+- Default tabular snapshots to Apache Parquet with explicit schemas and stable compression. Preserve immutable upstream files in their original format, then record the raw-to-Parquet derivation and fingerprints for both. Use another working format only when the environment requires it and document why.
 - Treat the model manifest as the handoff between training, registry, deployment, and rollback.
 - Require immutable model versions, artifact checksums, data/code provenance, and conformance fixtures.
 - Separate build, release, and production mutation. A deployment request does not imply approval to deploy.

@@ -21,7 +21,7 @@ The manifest is JSON with `schema_version: 1`. Required top-level keys are `envi
 Include every capability below. Use `available: false` plus `notes` when absent. A capability may contain `provider`, `endpoint`, `uri`, `workspace`, and `commands`. Commands are inert templates and may use braces such as `{run_id}` or `{model_version}`.
 
 - `compute`: Training execution, scheduler, queues, accelerators, runtime image, working directory, and submit/status/cancel/log commands.
-- `data`: Source and derived data locations, snapshot/version mechanism, access mode, and validation command.
+- `data`: Source and derived data locations, snapshot/version mechanism, access mode, working format, and validation command. Prefer Apache Parquet for tabular snapshots. Preserve immutable upstream files separately, and fingerprint both raw and derived data.
 - `metadata`: Structured store for datasets, runs, releases, ownership, and audit records.
 - `artifacts`: Immutable object/file storage, URI convention, checksum algorithm, retention, and replication or backup.
 - `experiments`: Tracking backend, tracking URI, run naming, lineage fields, and query/UI instructions.

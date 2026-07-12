@@ -23,6 +23,7 @@
       "available": true,
       "provider": "PostgreSQL and versioned Parquet",
       "uri": "file:///srv/ml/data/snapshots",
+      "format": "Apache Parquet with explicit schema and stable compression",
       "versioning": "content digest plus immutable snapshot directory"
     },
     "metadata": {

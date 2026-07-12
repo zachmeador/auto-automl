@@ -1,0 +1,4 @@
+interface:
+  display_name: "Initialize Sample ML Data"
+  short_description: "Fetch reproducible tabular ML test datasets"
+  default_prompt: "Use $sample-data-init to initialize local sample datasets for testing ML workflows."
