@@ -1,9 +1,10 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "datasets": [
     {
       "slug": "titanic",
       "name": "Titanic",
+      "description": "Passenger and voyage records from the Titanic disaster used to study survival outcomes.",
       "source": "OpenML dataset 40945, version 1",
       "source_page": "https://www.openml.org/search?type=data&status=active&id=40945",
       "url": "https://www.openml.org/data/v1/download/16826755",
@@ -21,6 +22,7 @@
     {
       "slug": "adult",
       "name": "Adult",
+      "description": "Census-derived demographic and employment records used to predict whether annual income exceeds $50,000.",
       "source": "OpenML dataset 1590, version 2",
       "source_page": "https://www.openml.org/search?type=data&status=active&id=1590",
       "url": "https://www.openml.org/data/v1/download/1595261",
@@ -38,6 +40,7 @@
     {
       "slug": "california-housing",
       "name": "California Housing",
+      "description": "California census-block housing and demographic measurements used to predict median house value.",
       "source": "OpenML dataset 43939, version 1",
       "source_page": "https://www.openml.org/search?type=data&status=active&id=43939",
       "url": "https://www.openml.org/data/v1/download/22102987",
@@ -55,6 +58,7 @@
     {
       "slug": "covertype",
       "name": "Covertype",
+      "description": "Cartographic measurements of forest plots used to classify the dominant tree cover type.",
       "source": "OpenML dataset 1596, version 4",
       "source_page": "https://www.openml.org/search?type=data&status=active&id=1596",
       "url": "https://www.openml.org/data/v1/download/1601911",
@@ -72,6 +76,7 @@
     {
       "slug": "nyc-yellow-taxi-2023-01",
       "name": "NYC Yellow Taxi Trip Records, January 2023",
+      "description": "New York City yellow-taxi trip records for January 2023 containing timestamps, locations, distances, and fares.",
       "source": "New York City Taxi and Limousine Commission",
       "source_page": "https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page",
       "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-01.parquet",

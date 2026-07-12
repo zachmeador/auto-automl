@@ -11,7 +11,7 @@ Create a local test-data suite while following the ML environment contract's raw
 
 1. Read repository guidance and locate its local-data directory. Default to `<repo>/data/`. Never place user data in tracked source directories.
 2. Confirm the data directory is Git-ignored before downloading. Add an ignore rule only when repository guidance permits edits; otherwise stop and explain the risk.
-3. Read [references/datasets.json](references/datasets.json). Use its pinned URLs, raw SHA-256 hashes, shapes, targets, and leakage notes instead of rediscovering substitutes.
+3. Read [references/datasets.json](references/datasets.json). Use its one-sentence descriptions, pinned URLs, raw SHA-256 hashes, shapes, targets, and leakage notes instead of rediscovering substitutes.
 4. Run the deterministic initializer from the repository root:
 
    ```bash
@@ -22,7 +22,7 @@ Create a local test-data suite while following the ML environment contract's raw
 
 5. Preserve downloads unchanged under `data/raw/`. Stop on a raw checksum mismatch; never silently replace or repair a source file.
 6. Use `data/parquet/` as the default training input. Convert non-Parquet sources with Zstandard compression and copy upstream Parquet there unchanged for a uniform entry point.
-7. Inspect `data/catalog.json`, verify every Parquet row and column count, and report paths, shapes, task types, and total disk use.
+7. Inspect `data/catalog.json`, verify that every dataset has a one-sentence `description` and that every Parquet row and column count matches, then report paths, descriptions, shapes, task types, and total disk use.
 8. Call out prediction-time leakage and split constraints before recommending a target. Dataset size does not establish representativeness.
 
 ## Dataset roles
@@ -37,6 +37,7 @@ Create a local test-data suite while following the ML environment contract's raw
 
 - Treat raw downloads as immutable source artifacts.
 - Fingerprint raw and derived files independently in `data/catalog.json`.
+- Store a one-sentence `description` explaining what each dataset is in both the pinned manifest and generated catalog.
 - Prefer Parquet for tabular working snapshots unless the environment contract explicitly records another requirement.
 - Do not commit `data/`, credentials, caches, or temporary download files.
 - Do not claim successful initialization until hashes, file signatures, and Parquet metadata validate.

@@ -162,7 +162,18 @@ def validate_parquet(path: Path, rows: int, columns: int) -> None:
 
 def load_manifest() -> dict:
     path = Path(__file__).resolve().parent.parent / "references" / "datasets.json"
-    return json.loads(path.read_text(encoding="utf-8"))
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    for dataset in manifest.get("datasets", []):
+        description = dataset.get("description")
+        if not isinstance(description, str) or not description.strip():
+            raise RuntimeError(
+                f"dataset {dataset.get('slug', '<unknown>')} needs a description"
+            )
+        if "\n" in description or description[-1] not in ".!?":
+            raise RuntimeError(
+                f"dataset {dataset.get('slug', '<unknown>')} description must be one sentence"
+            )
+    return manifest
 
 
 def main() -> int:
@@ -185,7 +196,7 @@ def main() -> int:
             if item.get("default_path") and item.get("parquet_sha256")
         }
     catalog = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "default_format": "parquet",
         "datasets": [],

@@ -5,13 +5,13 @@ description: Find datasets online and add them to this project's local, uncommit
 
 # Collect Local Dataset
 
-Keep user datasets under `./data/`; this directory is intentionally excluded from version control. Store each dataset at `./data/datasets/<dataset-id>/` with original downloaded files in `source/` and provenance plus checksums in `dataset.json`.
+Keep user datasets under `./data/`; this directory is intentionally excluded from version control. Store each dataset at `./data/datasets/<dataset-id>/` with original downloaded files in `source/` and provenance plus checksums in `dataset.json`. Include a `description` containing one sentence that explains what the dataset is.
 
 ## Add a dataset
 
 1. Work from the repository root. Confirm `./data/` is ignored by Git.
 2. Search online for the requested dataset. Prefer the original publisher, official repository, or established dataset registry over an unverified mirror.
-3. Inspect the source page before downloading. Record the exact download URL, dataset name, description, retrieval time, and stated license. If the license is not stated, record `unknown`; do not guess.
+3. Inspect the source page before downloading. Record the exact download URL, dataset name, a one-sentence description of what the dataset is, retrieval time, and stated license. If the license is not stated, record `unknown`; do not guess.
 4. Check whether the collection already contains the dataset:
 
    ```bash
@@ -32,7 +32,7 @@ Keep user datasets under `./data/`; this directory is intentionally excluded fro
      --name "Titanic" \
      --source-url "https://publisher.example/data.csv" \
      --license "license stated by publisher" \
-     --description "Passenger records used for survival prediction"
+     --description "Passenger records from the Titanic disaster used for survival prediction."
    ```
 
 8. Verify stored file checksums:

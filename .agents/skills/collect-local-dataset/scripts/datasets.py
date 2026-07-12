@@ -85,6 +85,9 @@ def register(args: argparse.Namespace) -> None:
     manifest_path = directory / "dataset.json"
     if manifest_path.exists():
         raise ValueError(f"dataset is already registered: {args.dataset_id}")
+    description = args.description.strip()
+    if not description or "\n" in description or description[-1] not in ".!?":
+        raise ValueError("description must be one sentence ending in punctuation")
     files = source_files(directory)
     records = []
     for path in files:
@@ -99,7 +102,7 @@ def register(args: argparse.Namespace) -> None:
         "schema_version": 1,
         "id": args.dataset_id,
         "name": args.name,
-        "description": args.description,
+        "description": description,
         "source": {
             "url": args.source_url,
             "retrieved_at": datetime.now(timezone.utc).isoformat(),
@@ -180,7 +183,11 @@ def parser() -> argparse.ArgumentParser:
     register_parser.add_argument("--name", required=True)
     register_parser.add_argument("--source-url", required=True)
     register_parser.add_argument("--license", required=True)
-    register_parser.add_argument("--description", default="")
+    register_parser.add_argument(
+        "--description",
+        required=True,
+        help="one sentence explaining what the dataset is",
+    )
     register_parser.set_defaults(handler=register)
 
     list_parser = commands.add_parser("list", help="list registered datasets")
