@@ -1,0 +1,4 @@
+interface:
+  display_name: "Generate ML Environment Skillpack"
+  short_description: "Create portable skills for an ML platform"
+  default_prompt: "Use $generate-ml-environment-skillpack to create an agent skillpack for my model training and deployment environment."

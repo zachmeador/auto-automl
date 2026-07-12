@@ -1,0 +1,4 @@
+interface:
+  display_name: "Collect Local Dataset"
+  short_description: "Download and manage datasets under ./data"
+  default_prompt: "Use $collect-local-dataset to find an online dataset and add it to this project’s local collection."

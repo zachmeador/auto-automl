@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "environment": {
+    "name": "Home Lab ML",
+    "slug": "home-lab",
+    "class": "homelab",
+    "owner": "ml-platform-owner",
+    "description": "Single-site training and serving environment"
+  },
+  "capabilities": {
+    "compute": {
+      "available": true,
+      "provider": "containerized runner on gpu-vm",
+      "runtime": "locked OCI image",
+      "commands": {
+        "submit": "ssh gpu-vm -- ml-run submit --spec {run_spec}",
+        "status": "ssh gpu-vm -- ml-run status {run_id}",
+        "cancel": "ssh gpu-vm -- ml-run cancel {run_id}",
+        "logs": "ssh gpu-vm -- ml-run logs {run_id}"
+      }
+    },
+    "data": {
+      "available": true,
+      "provider": "PostgreSQL and versioned Parquet",
+      "uri": "file:///srv/ml/data/snapshots",
+      "versioning": "content digest plus immutable snapshot directory"
+    },
+    "metadata": {
+      "available": true,
+      "provider": "PostgreSQL",
+      "endpoint": "postgresql://ml-metadata.internal/mlops"
+    },
+    "artifacts": {
+      "available": true,
+      "provider": "MinIO",
+      "uri": "s3://ml-artifacts/models",
+      "checksum": "sha256",
+      "backup": "nightly replicated snapshot"
+    },
+    "experiments": {
+      "available": true,
+      "provider": "self-hosted MLflow",
+      "endpoint": "https://mlflow.internal",
+      "required_tags": ["code_revision", "data_fingerprint", "runtime_digest", "owner"]
+    },
+    "registry": {
+      "available": true,
+      "provider": "self-hosted MLflow registry",
+      "versioning": "immutable numeric version; aliases are mutable pointers"
+    },
+    "serving": {
+      "available": true,
+      "provider": "OCI container managed by systemd",
+      "endpoint": "https://models.internal/{model_name}",
+      "commands": {
+        "deploy": "ssh serving-vm -- model-release deploy {release_manifest}",
+        "health": "curl --fail https://models.internal/{model_name}/healthz",
+        "rollback": "ssh serving-vm -- model-release rollback {model_name} {release_id}"
+      }
+    },
+    "observability": {
+      "available": true,
+      "metrics": "Prometheus",
+      "logs": "journald shipped to Loki",
+      "dashboards": "Grafana",
+      "alerts": "Alertmanager",
+      "drift": "scheduled feature and prediction distribution job",
+      "commands": {
+        "service_logs": "ssh serving-vm -- journalctl -u model-{model_name}",
+        "service_status": "ssh serving-vm -- systemctl status model-{model_name}"
+      }
+    },
+    "identity": {
+      "available": true,
+      "human": "SSH certificates",
+      "workload": "dedicated service accounts",
+      "secret_refs": ["env:MLFLOW_TRACKING_TOKEN", "env:AWS_ACCESS_KEY_ID", "env:AWS_SECRET_ACCESS_KEY"]
+    },
+    "network": {
+      "available": true,
+      "reachability": "services available only on private LAN/VPN",
+      "tls": "internal CA",
+      "egress": "deny by default for serving"
+    }
+  },
+  "policies": {
+    "environments": ["development", "staging", "production"],
+    "approval_gates": ["production deployment", "model alias promotion", "destructive rollback"],
+    "data_rules": ["no raw sensitive data in artifacts or logs"],
+    "retention": {"runs": "365 days", "production_models": "indefinite while referenced"},
+    "recovery": {"artifact_rpo": "24h", "metadata_rpo": "24h", "target_rto": "4h"},
+    "cost_controls": ["stop idle training containers", "one concurrent GPU training run"]
+  },
+  "conventions": {
+    "model_version": "{model_name}/{semver}+{git_sha}",
+    "manifest": "model-manifest.json",
+    "conformance_test": "python -m tests.model_conformance --manifest {manifest}",
+    "required_tags": ["owner", "purpose", "environment"]
+  }
+}
